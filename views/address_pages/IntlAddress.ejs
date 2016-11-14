@@ -215,7 +215,7 @@ if (error_report) {
                     <option selected disabled>Select country...</option>
                     <%for(var c=0; c<countries.length;c++){%>
                     <% if (countries[c].name !== 'United Kingdom') { %>
-                    <option value="<%= countries[c].name%>" <%if ((form_values[0] && countries[c].name==form_values[0].country) || (form_values && countries[c].name==form_values.country)) { %>selected<%}%> >
+                    <option value="<%= countries[c].casebook_mapping%>" <%if ((form_values[0] && countries[c].name==form_values[0].country) || (form_values && countries[c].name==form_values.country)) { %>selected<%}%> >
                         <%= countries[c].name%></option>
                     <% } %>
                     <% } %>
