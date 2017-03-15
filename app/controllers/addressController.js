@@ -472,6 +472,6 @@ function postcodeLookup(postcode) {
 }
 
 function getCountries() {
-    countriesSQL = 'SELECT  name FROM "country" ORDER BY name ASC ';
+    countriesSQL = 'SELECT  name, casebook_mapping FROM "country" ORDER BY name ASC ';
     return envVariables.serviceSequelize.query(countriesSQL);
 }
