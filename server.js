@@ -89,11 +89,20 @@ app.use(bodyParser.urlencoded({
 
 
 
-var schedule = require('node-schedule');
 
+
+//Schedule and run account expiry job every day
+var schedule = require('node-schedule');
 var jobs = require('./config/jobs.js');
-//Expiry Job completed at 6:00AM every day.
-var ExpiryJob = schedule.scheduleJob(environmentVariables.userAccountSettings.jobSchedule, function(){jobs.accountExpiryCheck()});
+
+// As there are 2 instances running, we need a random time, or two emails will be sent
+// for accounts nearing expiration. (Flag will be set by time of 2nd job execution to stop duplicate)
+var randomSecond = Math.floor(Math.random() * 60);
+var randomMin = Math.floor(Math.random() * 10);
+var jobScheduleRandom = randomSecond + " " + randomMin + " " + 
+    environmentVariables.userAccountSettings.jobScheduleHour + " * * *";
+
+var ExpiryJob = schedule.scheduleJob(jobScheduleRandom, function(){jobs.accountExpiryCheck()});
 
 
 passportConfig(app, passport);
