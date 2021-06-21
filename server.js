@@ -5,7 +5,9 @@ var express = require('express'),
     common = require('./config/common.js'),
     environmentVariables = common.config(),
     session = require('express-session'),
+    redis = require('redis'),
     RedisStore = require('connect-redis')(session),
+    redisClient = redis.createClient(),
     passport = require('passport'),
     passportConfig = require('./app/passportConfig'),
     flash = require('connect-flash'),
@@ -37,14 +39,6 @@ app.use(function(req, res, next) {
 
 var port = (process.argv[2] && !isNaN(process.argv[2])  ? process.argv[2] : (process.env.PORT || 8080));
 
-var store = new RedisStore(
-    {
-        host: sessionSettings.host,
-        port: sessionSettings.port,
-        prefix: sessionSettings.prefix,
-        pass: sessionSettings.password,
-        tls: {}
-    });
 
 app.set('view engine', 'ejs');
 
@@ -65,18 +59,26 @@ app.use(function (req, res, next) {
     next();
 });
 
+app.use(
+    session({
+        store: new RedisStore({
+            client: redisClient,
+            host: sessionSettings.host,
+            port: sessionSettings.port,
+            prefix: sessionSettings.prefix,
+            pass: sessionSettings.password
+        }),
+        saveUninitialized: false,
+        secret: sessionSettings.secret,
+        key: sessionSettings.key,
+        resave: false,
+        cookie: {
+            domain: sessionSettings.cookie_domain, //environmentVariables.cookieDomain,
+            maxAge: sessionSettings.cookieMaxAge //30 minutes
+        }
+    })
+)
 
-app.use(session({
-    secret: sessionSettings.secret,
-    key: sessionSettings.key,
-    store: store,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        domain: cookie_domain ,//environmentVariables.cookieDomain,
-        maxAge: sessionSettings.cookieMaxAge  //30 minutes
-    }
-}));
 app.use(flash()); //use connect-flash for flash messages stored in session
 app.use(passport.initialize());
 app.use(passport.session()); //persistent login sessions
