@@ -43,6 +43,7 @@ var store = new RedisStore(
         port: sessionSettings.port,
         prefix: sessionSettings.prefix,
         pass: sessionSettings.password,
+        tls: process.env.NODE_ENV === 'development' ? undefined : {}
     });
 
 app.set('view engine', 'ejs');
