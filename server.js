@@ -98,7 +98,7 @@ var jobs = require('./config/jobs.js');
 // As there are 2 instances running, we need a random time, or two emails will be sent
 // for accounts nearing expiration. (Flag will be set by time of 2nd job execution to stop duplicate)
 var randomSecond = Math.floor(Math.random() * 60);
-var randomMin = Math.floor(Math.random() * 10);
+var randomMin = Math.floor(Math.random() * 60); //Math.random returns a number from 0 to < 1 (never will return 60)
 var jobScheduleRandom = randomSecond + " " + randomMin + " " + 
     environmentVariables.userAccountSettings.jobScheduleHour + " * * *";
 
