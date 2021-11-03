@@ -38,7 +38,7 @@
     "serve-favicon": "^2.5.0",
     "supertest": "4.0.2",
     "unirest": "0.6.0",
-    "validator": "^13.1.1",
+    "validator": "^13.7.0",
     "winston": "^2.4.5",
     "xunit-file": "1.0.0"
   },
