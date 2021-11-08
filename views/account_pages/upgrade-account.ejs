@@ -10,7 +10,7 @@
 <div class="column-two-thirds">
     <%if(error_report.length>0){%><br>
     <%}%>
-    <form action="/api/user/upgrade-account" method="post" id="upgrade-account">
+    <form action="/api/user/upgrade-account?_csrf=<%=_csrf%>" method="post" id="upgrade-account">
 
         <div class="govuk-error-summary <% if (error_report) { %>show<% } else { %>hide<% } %>" role="alert" aria-labelledby="error-summary-heading-example-2" tabindex="-1" autofocus>
 

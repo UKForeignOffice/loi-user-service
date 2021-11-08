@@ -54,7 +54,7 @@
 
 
     <!-- LOGIN FORM -->
-    <form action="/api/user/sign-in" method="post" id="sign-in">
+    <form action="/api/user/sign-in?_csrf=<%=_csrf%>" method="post" id="sign-in">
         <input type="hidden" name="next" value="<%= qs.next %>" />
         <div class="form-group <%if(email_error){%>error<%}%>">
             <label for="email" class="form-label-bold">Email</label>
@@ -67,7 +67,6 @@
             <%if(error=='Missing email and password' || error=='Missing password'){%><span class="error-message">Enter your password</span><%}%>
             <input class="govuk-input govuk-!-width-one-half" id="password" name="password" aria-required="true" autocomplete="off"  type="password" >
         </div>
-        <input type="hidden" name="csrf" value="<%= csrf %>">
         <input type="submit" class="govuk-button" id="sign-in-button" value="Sign in">
         <p><a class="govuk-link" href="/api/user/forgot">Forgotten your password?</a></p>
 

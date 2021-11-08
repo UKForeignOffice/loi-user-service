@@ -32,7 +32,7 @@
 <h1 class="heading-xlarge">Reset password </h1>
 
 <!-- LOGIN FORM -->
-<form action="/api/user/reset/<%= resetPasswordToken%>" method="post" id="password-reset" class="column-two-thirds">
+<form action="/api/user/reset/<%= resetPasswordToken%>?_csrf=<%=_csrf%>" method="post" id="password-reset" class="column-two-thirds">
     <div class="form-group" id="legend_password">
         <label for="password" class="form-label-bold">New password</label>
 
