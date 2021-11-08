@@ -13,7 +13,7 @@ var express = require('express'),
     bodyParser = require('body-parser'),
     jsonParser = bodyParser.json(),
     cookieParser = require('cookie-parser'),
-    sass = require('node-sass');
+    csrf = require('csurf');
 
 require('./config/logs');
 require('dotenv').config();
@@ -21,6 +21,7 @@ require('dotenv').config();
 var sessionSettings = JSON.parse(process.env.THESESSION);
 
 app.use(cookieParser());
+app.use(csrf({ cookie: true }));
 
 app.use(function(req, res, next) {
     res.removeHeader("X-Powered-By");
@@ -60,7 +61,8 @@ app.use(function (req, res, next) {
         feedbackURL:environmentVariables.live_variables.Public ? environmentVariables.live_variables.feedbackURL : "http://www.smartsurvey.co.uk/s/2264M/",
         service_public: environmentVariables.live_variables.Public,
         start_url: environmentVariables.live_variables.startPageURL,
-        govuk_url: environmentVariables.live_variables.GOVUKURL
+        govuk_url: environmentVariables.live_variables.GOVUKURL,
+        _csrf: req.csrfToken()
     };
     next();
 });
@@ -99,7 +101,7 @@ var jobs = require('./config/jobs.js');
 // for accounts nearing expiration. (Flag will be set by time of 2nd job execution to stop duplicate)
 var randomSecond = Math.floor(Math.random() * 60);
 var randomMin = Math.floor(Math.random() * 60); //Math.random returns a number from 0 to < 1 (never will return 60)
-var jobScheduleRandom = randomSecond + " " + randomMin + " " + 
+var jobScheduleRandom = randomSecond + " " + randomMin + " " +
     environmentVariables.userAccountSettings.jobScheduleHour + " * * *";
 
 var ExpiryJob = schedule.scheduleJob(jobScheduleRandom, function(){jobs.accountExpiryCheck()});

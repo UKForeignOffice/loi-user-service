@@ -68,7 +68,7 @@
             <input class="govuk-input govuk-!-width-one-half" id="password" name="password" aria-required="true" autocomplete="off"  type="password" >
         </div>
 
-
+        <input type="hidden" name="_csrf" value="<%=_csrf%>">
         <input type="submit" class="govuk-button" id="sign-in-button" value="Sign in">
         <p><a class="govuk-link" href="/api/user/forgot">Forgotten your password?</a></p>
 

@@ -7,7 +7,6 @@ var passport = require('passport'),
     addressController = require('./controllers/addressController.js'),
     Model = require('./model/models.js'),
     nextpage;
-
 const { Op } = require("sequelize");
 
 module.exports = function(express,envVariables) {
@@ -88,7 +87,7 @@ module.exports = function(express,envVariables) {
                 back_link = envVariables.applicationServiceURL + 'start';
             }
         }
-        
+
         return res.render('sign-in.ejs', {
             error: error,
             error_subitem: error_subitem,
@@ -105,7 +104,7 @@ module.exports = function(express,envVariables) {
             req.body.email = req.body.email.toLowerCase();
 
             req.session.email = req.body.email;
-        
+
             if(!req.body.email){
                 if(!req.body.password) {
                     req.flash('error','Missing email and password');
