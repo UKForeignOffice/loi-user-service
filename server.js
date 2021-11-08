@@ -12,8 +12,7 @@ var express = require('express'),
     appRouter = require('./app/routes.js')(express,environmentVariables),
     bodyParser = require('body-parser'),
     jsonParser = bodyParser.json(),
-    cookieParser = require('cookie-parser'),
-    csrf = require('csurf');
+    cookieParser = require('cookie-parser');
 
 require('./config/logs');
 require('dotenv').config();
@@ -21,7 +20,6 @@ require('dotenv').config();
 var sessionSettings = JSON.parse(process.env.THESESSION);
 
 app.use(cookieParser());
-app.use(csrf({ cookie: true }));
 
 app.use(function(req, res, next) {
     res.removeHeader("X-Powered-By");
@@ -61,8 +59,7 @@ app.use(function (req, res, next) {
         feedbackURL:environmentVariables.live_variables.Public ? environmentVariables.live_variables.feedbackURL : "http://www.smartsurvey.co.uk/s/2264M/",
         service_public: environmentVariables.live_variables.Public,
         start_url: environmentVariables.live_variables.startPageURL,
-        govuk_url: environmentVariables.live_variables.GOVUKURL,
-        _csrf: req.csrfToken()
+        govuk_url: environmentVariables.live_variables.GOVUKURL
     };
     next();
 });

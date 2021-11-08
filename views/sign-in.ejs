@@ -67,8 +67,7 @@
             <%if(error=='Missing email and password' || error=='Missing password'){%><span class="error-message">Enter your password</span><%}%>
             <input class="govuk-input govuk-!-width-one-half" id="password" name="password" aria-required="true" autocomplete="off"  type="password" >
         </div>
-
-        <input type="hidden" name="_csrf" value="<%=_csrf%>">
+        <input type="hidden" name="csrf" value="<%= csrf %>">
         <input type="submit" class="govuk-button" id="sign-in-button" value="Sign in">
         <p><a class="govuk-link" href="/api/user/forgot">Forgotten your password?</a></p>
 

@@ -88,6 +88,10 @@ module.exports = function(express,envVariables) {
             }
         }
 
+        if (req.session.csrf === undefined) {
+          req.session.csrf = crypto.randomBytes(24).toString('base64');
+        }
+
         return res.render('sign-in.ejs', {
             error: error,
             error_subitem: error_subitem,
@@ -96,7 +100,8 @@ module.exports = function(express,envVariables) {
             email: req.session.email,
             back_link: back_link,
             applicationServiceURL: envVariables.applicationServiceURL,
-            qs: req.query
+            qs: req.query,
+            csrf: req.session.csrf
         });
     });
 
@@ -104,6 +109,14 @@ module.exports = function(express,envVariables) {
             req.body.email = req.body.email.toLowerCase();
 
             req.session.email = req.body.email;
+
+            if (!req.body.csrf) {
+                throw new Error('Missing CSRF token');
+            }
+
+            if (req.body.csrf !== req.session.csrf) {
+                throw new Error('Incorrect CSRF token');
+            }
 
             if(!req.body.email){
                 if(!req.body.password) {
