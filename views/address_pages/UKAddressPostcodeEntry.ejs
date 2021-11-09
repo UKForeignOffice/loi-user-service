@@ -35,7 +35,7 @@
     <div id="sr-notification-container" class="visually-hidden"  aria-live="assertive" aria-atomic="true"></div>
 <div class="column-two-thirds">
     <div class="form-group column-two-third">
-        <form id="find-address-form"  method="post" action="<%= '/api/user/find-your-address'%>">
+        <form id="find-address-form"  method="post" action="/api/user/find-your-address?_csrf=<%=_csrf%>">
             <label class="form-label-bold"  for="find-postcode">Enter postcode</label>
             <% if(typeof(error_report)!='undefined'){%><span class="error-message"><%= error_report%></span><%}%>
 
@@ -50,7 +50,7 @@
         </form>
     </div>
 </div>
-<form id="select-address-form" class="column-two-thirds"  method="post" action="<%= '/api/user/select-your-address'%>">
+<form id="select-address-form" class="column-two-thirds"  method="post" action="/api/user/select-your-address?_csrf=<%=_csrf%>">
     <input type="hidden" name="full_name" value="<%if(account.full_name != null){%><%= account.full_name %><%}%>">
     <input type="hidden" name="postcode" value="">
     <div class="hide" id="address-list-group">
@@ -69,7 +69,7 @@
 
 <div id="uk-address-form" class="address-form hide column-two-thirds">
 
-    <form id="address_form" method="post" action="/api/user/save-address">
+    <form id="address_form" method="post" action="/api/user/save-address?_csrf=<%=_csrf%>">
         <div class="form-group" id="address-details-group">
 
             <div class="form-group " id="legend_full_name">

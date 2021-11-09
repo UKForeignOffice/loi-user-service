@@ -13,6 +13,7 @@ var express = require('express'),
     bodyParser = require('body-parser'),
     jsonParser = bodyParser.json(),
     cookieParser = require('cookie-parser'),
+    sass = require('node-sass'),
     csrf = require('csurf');
 
 require('./config/logs');

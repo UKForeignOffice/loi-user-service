@@ -79,7 +79,7 @@ if (error_report) {
 <%}else{%>
     <h1 class="heading-xlarge">Edit return address</h1>
 <%}%>
-<form id="edit_address_form" class="column-two-thirds" method="post" action="/api/user/edit-address">
+<form id="edit_address_form" class="column-two-thirds" method="post" action="/api/user/edit-address?_csrf=<%=_csrf%>">
     <div class=" form-group" id="address-details-group">
 
         <% if (require_contact_details === 'yes') {%>

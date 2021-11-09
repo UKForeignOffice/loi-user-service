@@ -69,7 +69,7 @@ if (error_report) {
 </div>
 <h1 class="heading-xlarge">Add a return address</h1>
 
-<form id="address_form" class="column-two-thirds" method="post" action="/api/user/save-address">
+<form id="address_form" class="column-two-thirds" method="post" action="/api/user/save-address?_csrf=<%=_csrf%>">
     <div class="form-group address-form" id="address-details-group">
 
         <div class="form-group  <% if (error_report && error_report[1][0].erroneousFields.indexOf('full_name')>-1) { %>error<% } %>" id="legend_full_name">

@@ -27,7 +27,7 @@
 <h1 class="heading-xlarge">Add a return address</h1>
 
 <div class="form-group">
-    <form id="is-uk" method="post" action="<%= '/api/user/add-address-uk' %>">
+    <form id="is-uk" method="post" action="/api/user/add-address-uk?_csrf=<%=_csrf%>">
 
         <div class="form-group <%if (error_report && error_report.length>0 ) {%>error<%}%>">
             <h2 class="form-label-bold">Is the return address in the UK?</h2>

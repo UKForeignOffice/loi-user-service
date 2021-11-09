@@ -33,7 +33,7 @@
 
 
 <div class="form-group <%if (error_report && error_report.length>0) {%>error<%}%>">
-    <form id="find-address-form"  method="post" action="<%= '/api/user/find-your-address'%>">
+    <form id="find-address-form"  method="post" action="/api/user/find-your-address?_csrf=<%=_csrf%>">
         <label class="form-label-bold" for="find-postcode">Enter postcode</label>
         <% if(typeof(error_report)!='undefined'){%><span class="error-message"><%= error_report%></span><%}%>
 
@@ -42,7 +42,7 @@
     </form>
     <a class="link address-manual" id="address-manual" href="<%= '/api/user/your-address-manual'%>" >Enter address manually</a>
 
-    <form id="select-address-form" class="column-two-thirds"  method="post" action="<%= '/api/user/select-your-address'%>">
+    <form id="select-address-form" class="column-two-thirds"  method="post" action="/api/user/select-your-address?_csrf=<%=_csrf%>">
         <input type="hidden" name="full_name" value="<%if(account.full_name != null){%><%= account.full_name %><%}%>">
         <input type="hidden" name="postcode" value="<%= postcode%>">
         <div class="<%if(addresses.length==0 || addresses==false){%>hide<%}%>" id="address-list-group">
