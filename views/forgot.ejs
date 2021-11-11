@@ -34,7 +34,7 @@
     _paq.push(['trackEvent', 'Account 11 - reset password', 'user clicked link in email to reset password']);
 </script>
 
-<form action="/api/user/forgot" method="post" class="column-two-thirds">
+<form action="/api/user/forgot?_csrf=<%=_csrf%>" method="post" class="column-two-thirds">
 
     <div class="form-group">
         <label for="email" class="form-label-bold">Email</label>

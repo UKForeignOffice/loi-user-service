@@ -35,27 +35,23 @@
     <div id="sr-notification-container" class="visually-hidden"  aria-live="assertive" aria-atomic="true"></div>
 <div class="column-two-thirds">
     <div class="form-group column-two-third">
-        <form id="find-address-form"  method="post" action="<%= '/api/user/find-your-address'%>">
+        <form id="find-address-form"  method="post" action="/api/user/find-your-address?_csrf=<%=_csrf%>">
             <label class="form-label-bold"  for="find-postcode">Enter postcode</label>
             <% if(typeof(error_report)!='undefined'){%><span class="error-message"><%= error_report%></span><%}%>
 
-            <input class="govuk-input govuk-!-width-one-quarter"  aria-required="true" id="find-postcode" type="text"
+            <input class="govuk-input govuk-!-width-one-quarter" aria-required="true" id="find-postcode" type="text"
                    name="find-postcode">
-            <button class="govuk-button govuk-button--secondary" type="submit" id="find-address">Find UK address</button>
-
-
-
-
-            <a class="link address-manual" id="address-manual" href="<%= '/api/user/your-address-manual' %>" >Enter address manually</a>
+            <button class="govuk-button govuk-button--secondary" data-csrf="<%=_csrf%>" type="submit" id="find-address">Find UK address</button>
+            <a class="link address-manual" id="address-manual" href="/api/user/your-address-manual" >Enter address manually</a>
         </form>
     </div>
 </div>
-<form id="select-address-form" class="column-two-thirds"  method="post" action="<%= '/api/user/select-your-address'%>">
+<form id="select-address-form" class="column-two-thirds"  method="post" action="/api/user/select-your-address?_csrf=<%=_csrf%>">
     <input type="hidden" name="full_name" value="<%if(account.full_name != null){%><%= account.full_name %><%}%>">
     <input type="hidden" name="postcode" value="">
     <div class="hide" id="address-list-group">
         <label class="form-label visuallyhidden" for="address-list-box">Pick an address</label>
-        <select class="govuk-input govuk-!-width-one-half" id="address-list-box" name="address" form="select-address-form" aria-required="true"
+        <select class="govuk-input govuk-!-width-one-half" data-csrf="<%=_csrf%>" id="address-list-box" name="address" form="select-address-form" aria-required="true"
                 onchange="">
             <option disabled selected>Pick an address</option>
         </select>
@@ -69,7 +65,7 @@
 
 <div id="uk-address-form" class="address-form hide column-two-thirds">
 
-    <form id="address_form" method="post" action="/api/user/save-address">
+    <form id="address_form" method="post" action="/api/user/save-address?_csrf=<%=_csrf%>">
         <div class="form-group" id="address-details-group">
 
             <div class="form-group " id="legend_full_name">

@@ -67,19 +67,19 @@ if (error_report) {
 
 <div class="form-group">
 
-    <form id="find-address-form"  method="post" action="<%= '/api/user/find-your-address'%>">
+    <form id="find-address-form"  method="post" action="/api/user/find-your-address?_csrf=<%=_csrf%>">
         <label class="form-label-bold" for="find-postcode">Enter postcode</label>
         <input class="govuk-input govuk-!-width-one-quarter" id="find-postcode" type="text" aria-required="true" value="<%= postcode%>" name="find-postcode">
-        <button class="govuk-button govuk-button--secondary" type="submit" id="find-address">Find UK address</button>
+        <button class="govuk-button govuk-button--secondary" data-csrf="<%=_csrf%>" type="submit" id="find-address">Find UK address</button>
     </form>
     <a class="link address-manual" id="address-manual" href="<%= '/api/user/your-address-manual'%>" >Enter address manually</a>
 
-    <form id="select-address-form" class="column-two-thirds"  method="post" action="<%= '/api/user/select-your-address'%>">
+    <form id="select-address-form" class="column-two-thirds"  method="post" action="/api/user/select-your-address?_csrf=<%=_csrf%>">
         <input type="hidden" name="full_name" value="<%if(account.full_name != null){%><%= account.full_name %><%}%>">
         <input type="hidden" name="postcode" value="<%= postcode%>">
         <div class="<%if(addresses.length==0 || addresses==false){%>hide<%}%>" id="address-list-group">
             <label class="form-label visuallyhidden" for="address-list">Pick an address</label>
-            <select class="govuk-input govuk-!-width-one-half" aria-required="true" id="address-list-box" name="address" form="select-address-form"
+            <select class="govuk-input govuk-!-width-one-half" data-csrf="<%=_csrf%>" aria-required="true" id="address-list-box" name="address" form="select-address-form"
                     onchange="document.getElementById('select-address-form').submit();">
                 <option disabled selected>Pick an address</option>
                 <%for(var a=0; a<addresses.length; a++){%>
@@ -95,7 +95,7 @@ if (error_report) {
 </div>
 
 
-<form id="address_form" class="column-two-thirds" method="post" action="/api/user/save-address">
+<form id="address_form" class="column-two-thirds" method="post" action="/api/user/save-address?_csrf=<%=_csrf%>">
     <div class="form-group address-form" id="address-details-group">
 
         <div class="form-group  <% if (error_report && error_report[1][0].erroneousFields.indexOf('full_name')>-1) { %>error<% } %>" id="legend_full_name">
