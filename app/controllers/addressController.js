@@ -7,7 +7,6 @@
 
 var async = require('async'),
     crypto = require('crypto'),
-    Sequelize = require('sequelize'),
     Model = require('../model/models.js'),
     ValidationService = require('../services/ValidationService.js'),
     common = require('../../config/common.js'),
@@ -380,13 +379,12 @@ module.exports.saveAddress= function(req,res) {
                 }else {
                     return res.redirect('/api/user/addresses');
                 }
-            })
-                .catch(Sequelize.ValidationError, function (error) {
+            }).catch(function (error) {
                     return getCountries().then(function (countries) {
                         ValidationService.buildAddressErrorArray(error, req, res, countries,user, account);
                         return null;
                     });
-                });
+            });
         });
     });
 
@@ -524,7 +522,7 @@ module.exports.editAddress= function(req,res) {
                     return res.redirect('/api/user/addresses');
                 }
             })
-                .catch(Sequelize.ValidationError, function (error) {
+                .catch(function (error) {
                     console.log(error);
                     return getCountries().then(function (countries) {
                         ValidationService.buildAddressErrorArray(error, req, res, countries,user, account,true);
