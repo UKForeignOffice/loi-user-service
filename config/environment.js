@@ -1,7 +1,6 @@
 // /**
 //  * Created by preciousr on 07/01/2016.
 //  */
-// var Sequelize = require('sequelize');
 
 // module.exports = {
 

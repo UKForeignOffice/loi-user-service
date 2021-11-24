@@ -247,10 +247,10 @@ if (error_report) {
             </fieldset>
         </div>
         <div class="form-group  <% if (error_report && error_report[1][0].erroneousFields.indexOf('mobileNo')>-1) { %>error<% } %>" id="legend_mobileNo">
-            <label class="form-label-bold" for="mobileNo">Mobile number</label>
+            <label class="form-label-bold" for="mobileNo">Mobile number <span>(optional)</span></label>
             <span class="form-hint">Mobile number for this address for delivery questions or updates</span>
             <fieldset>
-                <legend class="visuallyhidden">Mobile number
+                <legend class="visuallyhidden">Mobile number <span>(optional)</span>
                 </legend>
                 <span class="error-message">
                     <% if (error_report && primaryAddressErrors.length>0) { %>
