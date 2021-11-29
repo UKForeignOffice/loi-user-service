@@ -32,7 +32,7 @@
 
 <div class="column-two-thirds">
     <p>We need a few more details to set your account up</p>
-    <form action="/api/user/complete-registration" id="complete-registration-form" method="post">
+    <form action="/api/user/complete-registration?_csrf=<%=_csrf%>" id="complete-registration-form" method="post">
 
         <div class="form-group <% if (error_report && error_report[1][0].erroneousFields.indexOf('first_name')>-1) { %>error<% } %>">
 
@@ -52,7 +52,7 @@
         </div>
         <div class="form-group <% if (error_report && error_report[1][0].erroneousFields.indexOf('last_name')>-1) { %>error<% } %>">
             <label for="last-name"  class="form-label-bold">Last name</label>
-            
+
                     <% if (error_report) { %>
                     <% error_report[0][0].errMsgs.forEach( function(error) { %>
                     <% if (error.questionId=="last_name") { %>

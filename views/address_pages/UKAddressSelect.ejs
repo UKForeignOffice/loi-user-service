@@ -33,21 +33,21 @@
 
 
 <div class="form-group <%if (error_report && error_report.length>0) {%>error<%}%>">
-    <form id="find-address-form"  method="post" action="<%= '/api/user/find-your-address'%>">
+    <form id="find-address-form"  method="post" action="/api/user/find-your-address?_csrf=<%=_csrf%>">
         <label class="form-label-bold" for="find-postcode">Enter postcode</label>
         <% if(typeof(error_report)!='undefined'){%><span class="error-message"><%= error_report%></span><%}%>
 
         <input class="govuk-input govuk-!-width-one-quarter" id="find-postcode" aria-required="true" type="text" value="<%= postcode%>" name="find-postcode">
-        <button class="govuk-button govuk-button--secondary" type="submit" id="find-address">Find UK address</button>
+        <button class="govuk-button govuk-button--secondary" data-csrf="<%=_csrf%>" type="submit" id="find-address">Find UK address</button>
     </form>
     <a class="link address-manual" id="address-manual" href="<%= '/api/user/your-address-manual'%>" >Enter address manually</a>
 
-    <form id="select-address-form" class="column-two-thirds"  method="post" action="<%= '/api/user/select-your-address'%>">
+    <form id="select-address-form" class="column-two-thirds"  method="post" action="/api/user/select-your-address?_csrf=<%=_csrf%>">
         <input type="hidden" name="full_name" value="<%if(account.full_name != null){%><%= account.full_name %><%}%>">
         <input type="hidden" name="postcode" value="<%= postcode%>">
         <div class="<%if(addresses.length==0 || addresses==false){%>hide<%}%>" id="address-list-group">
             <label class="form-label visuallyhidden" for="form-select">Pick an address</label>
-            <select class="govuk-input govuk-!-width-one-half" id="address-list-box" name="address" form="select-address-form" aria-required="true"
+            <select class="govuk-input govuk-!-width-one-half" data-csrf="<%=_csrf%>" id="address-list-box" name="address" form="select-address-form" aria-required="true"
                     onchange="document.getElementById('select-address-form').submit();">
                 <option disabled selected>Pick an address</option>
                 <%for(var a=0; a<addresses.length; a++){%>
