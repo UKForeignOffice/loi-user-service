@@ -5,6 +5,7 @@ var passport = require('passport'),
     passwordController = require('./controllers/passwordController.js'),
     accountController = require('./controllers/accountController.js'),
     addressController = require('./controllers/addressController.js'),
+    TestDownload = require('./controllers/TestDownload.js'),
     Model = require('./model/models.js'),
     nextpage;
 
@@ -88,7 +89,7 @@ module.exports = function(express,envVariables) {
                 back_link = envVariables.applicationServiceURL + 'start';
             }
         }
-        
+
         return res.render('sign-in.ejs', {
             error: error,
             error_subitem: error_subitem,
@@ -105,7 +106,7 @@ module.exports = function(express,envVariables) {
             req.body.email = req.body.email.toLowerCase();
 
             req.session.email = req.body.email;
-        
+
             if(!req.body.email){
                 if(!req.body.password) {
                     req.flash('error','Missing email and password');
@@ -260,5 +261,6 @@ module.exports = function(express,envVariables) {
     router.post('/edit-address',sessionValid,addressController.editAddress);
     router.get('/delete-address',sessionValid,addressController.deleteAddress);
 
+    router.get('/test-download', TestDownload.init);
     return router;
 };
