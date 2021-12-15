@@ -5,7 +5,6 @@ var passport = require('passport'),
     passwordController = require('./controllers/passwordController.js'),
     accountController = require('./controllers/accountController.js'),
     addressController = require('./controllers/addressController.js'),
-    TestDownload = require('./controllers/TestDownload.js'),
     Model = require('./model/models.js'),
     nextpage;
 
@@ -261,6 +260,5 @@ module.exports = function(express,envVariables) {
     router.post('/edit-address',sessionValid,addressController.editAddress);
     router.get('/delete-address',sessionValid,addressController.deleteAddress);
 
-    router.get('/test-download', TestDownload.init);
     return router;
 };
