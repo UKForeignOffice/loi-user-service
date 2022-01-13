@@ -195,6 +195,10 @@ module.exports = function(express,envVariables) {
 
     router.post('/forgot', passwordController.forgotPassword);
 
+    router.get('/session-expired' , function(req,res){
+        res.render('session-expired',{ startNewApplicationUrl: envVariables.applicationServiceURL});
+    });
+
     router.get('/reset/:token', function(req, res) {
         Model.User.findOne({where:{ resetPasswordToken: req.params.token, resetPasswordExpires: { [Op.gt]: new Date()} }})
             .then( function(user) {
