@@ -8,7 +8,7 @@
 <a href="/api/user/account" class="back_to_previous_button govuk-link">Back</a>
 
 <div class="column-two-thirds">
-    <form action="/api/user/change-details" method="post" id="change-details">
+    <form action="/api/user/change-details?_csrf=<%=_csrf%>" method="post" id="change-details">
         <%if(error_report.length>0){%><br>
         <%}%>
         <div class="govuk-error-summary <% if (error_report) { %>show<% } else { %>hide<% } %>" role="alert" aria-labelledby="error-summary-heading-example-2" tabindex="-1" autofocus>

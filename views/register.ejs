@@ -85,7 +85,7 @@
 
 
         <!-- REGISTER FORM -->
-        <form action="/api/user/register" method="post" id="register-form">
+        <form action="/api/user/register?_csrf=<%=_csrf%>" method="post" id="register-form">
             <div class="form-group <% if ((erroneousFields && erroneousFields[0].email == true)) { %>error<% } %>" id="legend_email">
                 <label for="email" class="form-label-bold">Email</label>
                     <span class="error-message">

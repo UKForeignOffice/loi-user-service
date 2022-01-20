@@ -79,7 +79,7 @@ if (error_report) {
 <%}else{%>
     <h1 class="heading-xlarge">Edit return address</h1>
 <%}%>
-<form id="edit_address_form" class="column-two-thirds" method="post" action="/api/user/edit-address">
+<form id="edit_address_form" class="column-two-thirds" method="post" action="/api/user/edit-address?_csrf=<%=_csrf%>">
     <div class=" form-group" id="address-details-group">
 
         <% if (require_contact_details === 'yes') {%>
@@ -240,11 +240,11 @@ if (error_report) {
     </div>
 
     <div class="form-group  <% if (error_report && error_report[1][0].erroneousFields.indexOf('mobileNo')>-1) { %>error<% } %>">
-        <label class="form-label-bold" for="town">Mobile number </label>
+        <label class="form-label-bold" for="mobileNo">Mobile number <span>(optional)</span></label>
         <span class="form-hint">Mobile number for this address for delivery questions or updates</span>
         <fieldset>
             <legend id="legend_mobileNo"
-                    class="visuallyhidden">Mobile Number</legend>
+                    class="visuallyhidden">Mobile Number <span>(optional)</span></legend>
                     <span class="error-message">
                         <% if (error_report && primaryAddressErrors.length>0) { %>
                         <% primaryAddressErrors.forEach( function(errorItem) { %>

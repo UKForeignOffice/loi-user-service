@@ -23,7 +23,7 @@
 <h1 class="heading-xlarge" style="margin-bottom: .75em;">Have you already got an online account for legalisation?</h1>
 
 <div class="form-group ">
-    <form id="has-account" method="post" action="/api/user/usercheck">
+    <form id="has-account" method="post" action="/api/user/usercheck?_csrf=<%=_csrf%>">
         <input type="hidden" name="next" value="<%= queryString.next %>" />
 
         <div class="form-group <%if(error){%>error<%}%>">

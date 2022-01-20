@@ -7,7 +7,6 @@
 
 var async = require('async'),
     crypto = require('crypto'),
-    Sequelize = require('sequelize'),
     Model = require('../model/models.js'),
     ValidationService = require('../services/ValidationService.js'),
     common = require('../../config/common.js'),
@@ -37,20 +36,7 @@ module.exports.submitUKQuestion = function(req,res){
         return res.redirect(error_redirect);
 
     }else if(JSON.parse(req.body.is_uk)){
-        Model.User.findOne({where:{email:req.session.email}}).then(function(user) {
-            Model.AccountDetails.findOne({where:{user_id:user.id}}).then(function(account){
-                return res.render('address_pages/UKAddressPostcodeEntry.ejs', {
-                    initial: req.session.initial,
-                    user:user,
-                    account:account,
-                    url:envVariables,
-                    error_report:req.flash('error'),
-                    contact_telephone:account.telephone,
-                    contact_mobileNo:account.mobileNo,
-                    contact_email:user.email
-                });
-            });
-        });
+       showPostcodeLookup(req, res);
     }else{
         return getCountries().then(function (countries) {
             Model.User.findOne({where:{email:req.session.email}}).then(function(user) {
@@ -73,22 +59,24 @@ module.exports.submitUKQuestion = function(req,res){
     }
 };
 
-module.exports.showPostcodeLookup = function(req,res){
-    Model.User.findOne({where:{email:req.session.email}}).then(function(user) {
-        Model.AccountDetails.findOne({where:{user_id:user.id}}).then(function(account){
-            return res.render('address_pages/UKAddressPostcodeEntry.ejs', {
-                initial: req.session.initial,
-                user:user,
-                account:account,
-                url:envVariables,
-                error_report:req.flash('error'),
-                contact_telephone:account.telephone,
-                contact_mobileNo:account.mobileNo,
-                contact_email:user.email
-            });
-        });
+function showPostcodeLookup(req, res) {
+  Model.User.findOne({ where: { email: req.session.email } }).then(function (user) {
+    Model.AccountDetails.findOne({ where: { user_id: user.id } }).then(function (account) {
+      return res.render('address_pages/UKAddressPostcodeEntry.ejs', {
+        initial: req.session.initial,
+        user: user,
+        account: account,
+        url: envVariables,
+        error_report: req.flash('error'),
+        contact_telephone: account.telephone,
+        contact_mobileNo: account.mobileNo,
+        contact_email: user.email,
+      });
     });
+  });
 };
+
+module.exports.showPostcodeLookup = showPostcodeLookup;
 
 module.exports.findAddress= function(req,res) {
     var Postcode = require("postcode");
@@ -380,13 +368,12 @@ module.exports.saveAddress= function(req,res) {
                 }else {
                     return res.redirect('/api/user/addresses');
                 }
-            })
-                .catch(Sequelize.ValidationError, function (error) {
+            }).catch(function (error) {
                     return getCountries().then(function (countries) {
                         ValidationService.buildAddressErrorArray(error, req, res, countries,user, account);
                         return null;
                     });
-                });
+            });
         });
     });
 
@@ -524,7 +511,7 @@ module.exports.editAddress= function(req,res) {
                     return res.redirect('/api/user/addresses');
                 }
             })
-                .catch(Sequelize.ValidationError, function (error) {
+                .catch(function (error) {
                     console.log(error);
                     return getCountries().then(function (countries) {
                         ValidationService.buildAddressErrorArray(error, req, res, countries,user, account,true);

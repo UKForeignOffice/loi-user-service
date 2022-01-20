@@ -7,7 +7,6 @@ var passport = require('passport'),
     addressController = require('./controllers/addressController.js'),
     Model = require('./model/models.js'),
     nextpage;
-
 const { Op } = require("sequelize");
 
 module.exports = function(express,envVariables) {

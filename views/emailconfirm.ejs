@@ -7,7 +7,7 @@
 
 <h1 class="heading-xlarge">Activate your account</h1>
 <div class="column-two-thirds" >
-    <form action="/api/user/resend-confirmation" method="post" id="resend-confirm">
+    <form action="/api/user/resend-confirmation?_csrf=<%=_csrf%>" method="post" id="resend-confirm">
         <p>We've sent a confirmation email to <span class="bold-small"><%= email%></span>. Check your email and click the link in the message to activate your account. The link will expire in 24 hours.</p>
         <p>If you can't find the email in your inbox try the following:</p>
         <ul>

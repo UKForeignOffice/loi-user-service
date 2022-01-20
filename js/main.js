@@ -128,6 +128,11 @@ $('#find-address').click(function(event){
         return true;
     }
     event.preventDefault();
+    $.ajaxSetup({
+        headers: {
+            'csrf-token': $('#find-address').data('csrf')
+        },
+    });
     $.post("/api/user/ajax-find-your-address",
         {address_type: $('input[name="address_type"]').val(), "find-postcode": $('#find-postcode').val()},
         function (data, status) {
@@ -188,6 +193,13 @@ $('#address-list-box').change(function(){
         $('#select-address-button-div').removeClass('hide').removeClass('js-hidden');
         return true;
     }
+
+    $.ajaxSetup({
+      headers: {
+        'csrf-token': $('#address-list-box').data('csrf'),
+      },
+    });
+
     $.post("/api/user/ajax-select-your-address",
         {address_type: $('input[name="address_type"]').val(),chosen:$('#address-list-box').val()},
         function (data, status) {
