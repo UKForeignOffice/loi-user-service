@@ -138,7 +138,7 @@ module.exports.changeDetails = function(req, res) {
 
                         // calculate HMAC string and encode in base64
                         var objectString = JSON.stringify(accountManagementObject, null, 0);
-                        var hash = crypto.createHmac('sha512', config.hmacKey).update(new Buffer(objectString, 'utf-8')).digest('hex').toUpperCase();
+                        var hash = crypto.createHmac('sha512', config.hmacKey).update(new Buffer.from(objectString, 'utf-8')).digest('hex').toUpperCase();
 
 
                         request.post({
@@ -319,7 +319,7 @@ module.exports.changeCompanyDetails = function(req, res) {
 
                             // calculate HMAC string and encode in base64
                             var objectString = JSON.stringify(accountManagementObject, null, 0);
-                            var hash = crypto.createHmac('sha512', config.hmacKey).update(new Buffer(objectString, 'utf-8')).digest('hex').toUpperCase();
+                            var hash = crypto.createHmac('sha512', config.hmacKey).update(new Buffer.from(objectString, 'utf-8')).digest('hex').toUpperCase();
 
 
                             request.post({
@@ -457,7 +457,7 @@ module.exports.upgradeAccount = function(req, res) {
 
                                 // calculate HMAC string and encode in base64
                                 var objectString = JSON.stringify(accountManagementObject, null, 0);
-                                var hash = crypto.createHmac('sha512', config.hmacKey).update(new Buffer(objectString, 'utf-8')).digest('hex').toUpperCase();
+                                var hash = crypto.createHmac('sha512', config.hmacKey).update(new Buffer.from(objectString, 'utf-8')).digest('hex').toUpperCase();
 
 
                                 request.post({

@@ -73,7 +73,7 @@ emailService = {
                                 if(err) {
                                         console.log(err);
                                     } else {
-                                        console.log('[ACCOUNT CHECK JOB] WARNING EMAIL SENT SUCCESSFULLY FOR USER ' + userID);
+                                        console.log('[USER CLEANUP JOB] WARNING EMAIL SENT SUCCESSFULLY FOR USER ' + userID);
                                     }
                                 return res.statusCode;
                             });
@@ -88,7 +88,7 @@ emailService = {
                             if(err) {
                                     console.log(err);
                                 } else {
-                                console.log('[ACCOUNT CHECK JOB] EXPIRY EMAIL SENT SUCCESSFULLY FOR USER ' + userID);
+                                console.log('[USER CLEANUP JOB] EXPIRY EMAIL SENT SUCCESSFULLY FOR USER ' + userID);
                                 }
                         });
         }
