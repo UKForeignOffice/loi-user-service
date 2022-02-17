@@ -1,11 +1,9 @@
 // application
 
-var express = require('express'),
+const express = require('express'),
     app = express(),
     common = require('./config/common.js'),
     environmentVariables = common.config(),
-    session = require('express-session'),
-    RedisStore = require('connect-redis')(session),
     passport = require('passport'),
     passportConfig = require('./app/passportConfig'),
     flash = require('connect-flash'),
@@ -13,13 +11,12 @@ var express = require('express'),
     bodyParser = require('body-parser'),
     jsonParser = bodyParser.json(),
     cookieParser = require('cookie-parser'),
-    sass = require('node-sass'),
     csrf = require('csurf');
 
 require('./config/logs');
 require('dotenv').config();
 
-var sessionSettings = JSON.parse(process.env.THESESSION);
+const sessionSettings = JSON.parse(process.env.THESESSION);
 
 app.use(cookieParser());
 app.use(csrf({cookie: true}));
@@ -37,27 +34,45 @@ app.use(function(req, res, next) {
     return next();
 });
 
-var port = (process.argv[2] && !isNaN(process.argv[2])  ? process.argv[2] : (process.env.PORT || 8080));
+const port = (process.argv[2] && !isNaN(process.argv[2])  ? process.argv[2] : (process.env.PORT || 8080));
 
-var store = new RedisStore(
-    {
-        host: sessionSettings.host,
+const session = require("express-session")
+let RedisStore = require("connect-redis")(session)
+
+const { createClient } = require("redis")
+let redisClient = createClient({
+    legacyMode: true,
+    password: sessionSettings.password,
+    socket: {
         port: sessionSettings.port,
+        host: sessionSettings.host,
+        tls: process.env.NODE_ENV !== 'development'
+    }
+})
+
+redisClient.connect().catch(console.error)
+
+app.use(
+    session({
+        store: new RedisStore({ client: redisClient }),
         prefix: sessionSettings.prefix,
-        pass: sessionSettings.password,
-        tls: process.env.NODE_ENV === 'development' ? undefined : {}
-    });
+        saveUninitialized: false,
+        secret: sessionSettings.secret,
+        key: sessionSettings.key,
+        resave: false,
+        rolling: true,
+        cookie: {
+            domain: sessionSettings.domain,
+            maxAge: sessionSettings.maxAge,
+            secure: 'auto'
+        }
+    })
+)
 
 app.set('view engine', 'ejs');
 
-var cookie_domain = null;
-if(environmentVariables.cookieDomain && environmentVariables.cookieDomain.cookieDomain ){
-    cookie_domain = environmentVariables.cookieDomain.cookieDomain;
-}
-
 app.use(function (req, res, next) {
     res.locals = {
-        //piwikID:cookie_domain == ("www.legalisationbeta.co.uk" ||"www.get-document-legalised.service.gov.uk") ? 19 :18,
         piwikID: environmentVariables.live_variables.piwikId,
         feedbackURL:environmentVariables.live_variables.Public ? environmentVariables.live_variables.feedbackURL : "http://www.smartsurvey.co.uk/s/2264M/",
         service_public: environmentVariables.live_variables.Public,
@@ -68,18 +83,6 @@ app.use(function (req, res, next) {
     next();
 });
 
-
-app.use(session({
-    secret: sessionSettings.secret,
-    key: sessionSettings.key,
-    store: store,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        domain: cookie_domain ,//environmentVariables.cookieDomain,
-        maxAge: sessionSettings.cookieMaxAge  //30 minutes
-    }
-}));
 app.use(flash()); //use connect-flash for flash messages stored in session
 app.use(passport.initialize());
 app.use(passport.session()); //persistent login sessions
@@ -102,8 +105,7 @@ var jobs = require('./config/jobs.js');
 // for accounts nearing expiration. (Flag will be set by time of 2nd job execution to stop duplicate)
 var randomSecond = Math.floor(Math.random() * 60);
 var randomMin = Math.floor(Math.random() * 60); //Math.random returns a number from 0 to < 1 (never will return 60)
-var jobScheduleRandom = randomSecond + " " + randomMin + " " +
-    environmentVariables.userAccountSettings.jobScheduleHour + " * * *";
+var jobScheduleRandom = randomSecond + " " + randomMin + " " + environmentVariables.userAccountSettings.jobScheduleHour + " * * *";
 
 var ExpiryJob = schedule.scheduleJob(jobScheduleRandom, function(){jobs.accountExpiryCheck()});
 
@@ -120,18 +122,6 @@ app.use('/api/user', appRouter);
 var fs = require('fs-extra');
 fs.copy(__dirname+'/data/strategy.js', __dirname+'/node_modules/passport-local/lib/strategy.js', function (err) {});
 
-var path = require('path');
-var sassMiddleware = require('node-sass-middleware');
-var srcPath = __dirname + '/sass';
-var destPath = __dirname + '/public';
-
-app.use('/api/user',sassMiddleware({
-    src: srcPath,
-    dest: destPath,
-    debug: false,
-    outputStyle: 'compressed',
-    prefix: '/api/user/'
-}));
 
 app.use("/api/user/",express.static(__dirname + "/public"));
 
@@ -164,4 +154,5 @@ function moveItem(item){
 // start app
 app.listen(port);
 console.log('Server started on port ' + port);
+console.log('user account cleanup job will run at %sh %sm %ss', environmentVariables.userAccountSettings.jobScheduleHour, randomMin, randomSecond)
 module.exports.getApp = app;
