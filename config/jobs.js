@@ -8,7 +8,6 @@ const jobs ={
 
     accountExpiryCheck: async function() {
 
-        const formattedDate = moment().toISOString()
         const now = new Date()
         let gracePeriod = new Date(now)
         gracePeriod.setDate(now.getDate()+envVariables.userAccountSettings.gracePeriod);
@@ -32,15 +31,15 @@ const jobs ={
         }
 
         function start() {
-            console.log('[%s][USER CLEANUP JOB] STARTED', formattedDate);
+            console.log('[USER CLEANUP JOB] STARTED');
         }
 
         function stop() {
-            console.log('[%s][USER CLEANUP JOB] FINISHED', formattedDate);
+            console.log('[USER CLEANUP JOB] FINISHED');
         }
 
         function abort(reason) {
-            console.log('[%s][USER CLEANUP JOB] ABORTED %s', formattedDate, reason);
+            console.log('[USER CLEANUP JOB] ABORTED %s', reason);
         }
 
         async function findAccountsNearingExpiry() {
@@ -124,12 +123,12 @@ const jobs ={
 
         async function sendWarningEmail(user, accountExpiryDateText, dayAndMonthText) {
             console.log('[USER CLEANUP JOB] SENDING WARNING EMAIL FOR USER ' + user.id);
-            emailService.expiryWarning(user.email,accountExpiryDateText,dayAndMonthText, user.id);
+            await emailService.expiryWarning(user.email,accountExpiryDateText,dayAndMonthText, user.id);
         }
 
         async function sendExpiryEmail(user) {
             console.log('[USER CLEANUP JOB] SENDING EXPIRY EMAIL FOR USER ' + user.id);
-            emailService.expiryConfirmation(user.email, user.id);
+            await emailService.expiryConfirmation(user.email, user.id);
         }
 
         async function processAccountsNearingExpiry(accountsNearingExpiry){

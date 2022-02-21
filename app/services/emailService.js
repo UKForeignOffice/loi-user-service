@@ -63,35 +63,34 @@ emailService = {
             }
         });
     },
-    expiryWarning: function(email, accountExpiryDateText, dayAndMonthText, userID){
+    expiryWarning: async function(email, accountExpiryDateText, dayAndMonthText, userID){
         
-                    var url = '/expiry_warning';
-                var postData= {to: email, accountExpiryDateText: accountExpiryDateText, dayAndMonthText: dayAndMonthText};
+        var url = '/expiry_warning';
+        var postData= {to: email, accountExpiryDateText: accountExpiryDateText, dayAndMonthText: dayAndMonthText};
         
-                    // send request to notification service
-                        request(setOptions(postData, url), function (err, res, body) {
-                                if(err) {
-                                        console.log(err);
-                                    } else {
-                                        console.log('[USER CLEANUP JOB] WARNING EMAIL SENT SUCCESSFULLY FOR USER ' + userID);
-                                    }
-                                return res.statusCode;
-                            });
-            },
-    expiryConfirmation: function(email, userID){
+        // send request to notification service
+        request(setOptions(postData, url), function (err) {
+            if(err) {
+                console.log(err);
+            } else {
+                console.log('[USER CLEANUP JOB] WARNING EMAIL SENT SUCCESSFULLY FOR USER ' + userID);
+            }
+        });
+    },
+    expiryConfirmation: async function(email, userID){
     
-                var url = '/expiry_confirmation';
-            var postData= {to: email};
+        var url = '/expiry_confirmation';
+        var postData= {to: email};
     
-                // send request to notification service
-                    request(setOptions(postData, url), function (err, res, body) {
-                            if(err) {
-                                    console.log(err);
-                                } else {
-                                console.log('[USER CLEANUP JOB] EXPIRY EMAIL SENT SUCCESSFULLY FOR USER ' + userID);
-                                }
-                        });
-        }
+        // send request to notification service
+        request(setOptions(postData, url), function (err) {
+            if(err) {
+                console.log(err);
+            } else {
+                console.log('[USER CLEANUP JOB] EXPIRY EMAIL SENT SUCCESSFULLY FOR USER ' + userID);
+            }
+        });
+    }
 };
 
 module.exports = emailService;
