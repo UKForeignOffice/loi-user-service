@@ -43,6 +43,7 @@ module.exports.usercheck = function(req, res) {
 };
 
 module.exports.show = function(req, res) {
+    let continueEAppFlow = false;
 
     if(req.query.from){
         if(req.query.from == 'home'){
@@ -56,6 +57,13 @@ module.exports.show = function(req, res) {
         }
     }
 
+    console.log(req.query.next === 'continueEApp', 'tingle')
+    if (req.query.next && req.query.next === 'continueEApp') {
+        req.session.continueEAppFlow = true;
+        continueEAppFlow = true;
+    }
+
+    console.log(continueEAppFlow, 'tangle')
 
     return res.render('register.ejs', {
         form_values: false,
@@ -64,6 +72,7 @@ module.exports.show = function(req, res) {
         error_report: false,
         error:false,
         error_description: false,
+        continueEApp: continueEAppFlow,
         email: req.session.email,
         back_link: req.session.back_link,
         applicationServiceURL: envVariables.applicationServiceURL });
@@ -264,6 +273,10 @@ module.exports.register = function(req, res) {
                                 crypto.randomBytes(20, function(error, buf) {
                                     var token = buf.toString('hex');
                                     //Pass token on to the next function
+                                    console.log(req.session.continueEAppFlow, 'flowMe')
+                                    if (req.session.continueEAppFlow) {
+                                        token = `${token}&continue_eApp=true`;
+                                    }
                                     done(error, token);
                                 });
                             },
@@ -356,7 +369,7 @@ module.exports.register = function(req, res) {
                             },
                             function(token, done){
                                 //send the email
-                                emailService.emailConfirmation(req.body.email,token);
+                                emailService.emailConfirmation(req.body.email, token);
                                 return done(null);
 
                             }
@@ -616,10 +629,15 @@ module.exports.activate = function(req, res) {
     async.waterfall([
         function (done) {
             //Find User with the password token which has not expired
+            let token = req.params.token;
+            console.log(req.query.continueEAppFlow, 'fnf')
+            if (req.query.continueEAppFlow) {
+                token = token.split('&')[0];
+            }
 
             Model.User.findOne({
                 where: {
-                    activationToken: req.params.token,
+                    activationToken: token,
                     activationTokenExpires: {
                         [Op.gt]: new Date()
                     }
@@ -627,8 +645,9 @@ module.exports.activate = function(req, res) {
             })
                 .then(function (user, error) {
                     if (!user) {
+                        const redirectUrl = req.query.continueEAppFlow ? '/api/user/sign-in?next=continueEApp' : '/api/user/sign-in';
                         req.flash('error', 'Activation reset token is invalid.  Sign in to send a new one.');
-                        return res.redirect('/api/user/sign-in');
+                        return res.redirect(redirectUrl);
                     }
                     //Update the user with the activated flag
                     Model.User.update({
