@@ -8,6 +8,7 @@ var passport = require('passport'),
     Model = require('./model/models.js'),
     nextpage;
 const { Op } = require("sequelize");
+const sessionSettings = JSON.parse(process.env.THESESSION);
 
 module.exports = function(express,envVariables) {
     var router = express.Router();
@@ -51,7 +52,8 @@ module.exports = function(express,envVariables) {
 
 
     router.get('/sign-in', function(req, res) {
-        if (!req.query) {
+        let sessionCookie = req.cookies[sessionSettings.key];
+        if (!sessionCookie) {
             res.redirect(envVariables.applicationServiceURL + 'select-service?newSession=true')
         }
         if (req.query.expired) {
