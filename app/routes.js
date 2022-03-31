@@ -51,6 +51,9 @@ module.exports = function(express,envVariables) {
 
 
     router.get('/sign-in', function(req, res) {
+        if (!req.query) {
+            res.redirect(envVariables.applicationServiceURL + 'select-service?newSession=true')
+        }
         if (req.query.expired) {
             req.flash('info', 'You have been successfully signed out.');
         }
@@ -185,7 +188,7 @@ module.exports = function(express,envVariables) {
         req.session.destroy();
         res.clearCookie('express.sid');
         res.clearCookie('LoggedIn');
-        return res.redirect('/api/user/sign-in?expired=true');
+        return res.redirect(envVariables.applicationServiceURL + 'select-service?newSession=true&expired=true');
     });
 
     router.get('/forgot' , function(req,res){
