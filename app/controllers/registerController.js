@@ -268,7 +268,7 @@ module.exports.register = function(req, res) {
                                     var token = buf.toString('hex');
                                     //Pass token on to the next function
                                     if (req.session.continueEAppFlow) {
-                                        token = `${token}?continue_eApp=true`;
+                                        token = `${token}&continue_eApp=true`;
                                     }
                                     done(error, token);
                                 });
@@ -399,7 +399,11 @@ module.exports.completeRegistration =function(req,res){
                 }, {where: {user_id: user.id}})
                     .then(function () {
                         req.session.initial = true;
-                        return  res.render('initial/address-skip.ejs');
+                        const eAppDocUploadUrl = `${envVariables.applicationserviceurl}upload-files`;
+
+                        return req.session.continueEAppFlow
+                            ? res.redirect(eAppDocUploadUrl)
+                            : res.render('initial/address-skip.ejs');
 
                     }).then(function () {
 
@@ -570,6 +574,9 @@ module.exports.resendActivationEmail = function(req, res) {
             crypto.randomBytes(20, function(error, buf) {
                 var token = buf.toString('hex');
                 //Pass token on to the next function
+                if (req.session.continueEAppFlow) {
+                    token = `${token}&continue_eApp=true`;
+                }
                 done(error, token);
             });
         },
@@ -622,27 +629,25 @@ module.exports.activate = function(req, res) {
     async.waterfall([
         function (done) {
             //Find User with the password token which has not expired
-            let activationToken = req.params.token;
-
             if (req.query.continue_eApp) {
-                const tokenWithoutQuery = activationToken.split('&')[0];
                 req.session.continueEAppFlow = true;
-                activationToken = tokenWithoutQuery;
             }
+
+            console.log(req.params.token, 'activationToken')
 
             Model.User.findOne({
                 where: {
-                    activationToken,
+                    activationToken: req.params.token,
                     activationTokenExpires: {
                         [Op.gt]: new Date()
                     }
                 }
             })
                 .then(function (user) {
+                    console.log(user, 'user');
                     if (!user) {
-                        const redirectUrl = req.query.continueEAppFlow ? '/api/user/sign-in?next=continueEApp' : '/api/user/sign-in';
                         req.flash('error', 'Activation reset token is invalid.  Sign in to send a new one.');
-                        return res.redirect(redirectUrl);
+                        return res.redirect('/api/user/sign-in');
                     }
                     //Update the user with the activated flag
                     Model.User.update({
