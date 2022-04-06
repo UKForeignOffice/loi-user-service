@@ -572,7 +572,6 @@ module.exports.resendActivationEmail = function(req, res) {
         },
         function(token, done) {
             //Find User with the password token which has not expired
-
             Model.User.findOne({
                 where: {
                     email: req.body.email,
@@ -620,6 +619,7 @@ module.exports.activate = function(req, res) {
     async.waterfall([
         function (done) {
             //Find User with the password token which has not expired
+
             Model.User.findOne({
                 where: {
                     activationToken: req.params.token,
