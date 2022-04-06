@@ -56,6 +56,9 @@ module.exports.show = function(req, res) {
         }
     }
 
+    if (req.query.next && req.query.next === 'continueEApp') {
+        req.session.continueEAppFlow = true;
+    }
 
     return res.render('register.ejs', {
         form_values: false,
@@ -625,7 +628,7 @@ module.exports.activate = function(req, res) {
                     }
                 }
             })
-                .then(function (user, error) {
+                .then(function (user) {
                     if (!user) {
                         req.flash('error', 'Activation reset token is invalid.  Sign in to send a new one.');
                         return res.redirect('/api/user/sign-in');
