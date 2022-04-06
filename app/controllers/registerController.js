@@ -56,10 +56,6 @@ module.exports.show = function(req, res) {
         }
     }
 
-    if (req.query.next && req.query.next === 'continueEApp') {
-        req.session.continueEAppFlow = true;
-    }
-
     return res.render('register.ejs', {
         form_values: false,
         erroneousFields:false,
@@ -267,9 +263,6 @@ module.exports.register = function(req, res) {
                                 crypto.randomBytes(20, function(error, buf) {
                                     var token = buf.toString('hex');
                                     //Pass token on to the next function
-                                    if (req.session.continueEAppFlow) {
-                                        token = `${token}&continue_eApp=true`;
-                                    }
                                     done(error, token);
                                 });
                             },
@@ -362,7 +355,7 @@ module.exports.register = function(req, res) {
                             },
                             function(token, done){
                                 //send the email
-                                emailService.emailConfirmation(req.body.email, token);
+                                emailService.emailConfirmation(req.body.email,token);
                                 return done(null);
 
                             }
@@ -399,11 +392,7 @@ module.exports.completeRegistration =function(req,res){
                 }, {where: {user_id: user.id}})
                     .then(function () {
                         req.session.initial = true;
-                        const eAppDocUploadUrl = `${envVariables.applicationserviceurl}upload-files`;
-
-                        return req.session.continueEAppFlow
-                            ? res.redirect(eAppDocUploadUrl)
-                            : res.render('initial/address-skip.ejs');
+                        return  res.render('initial/address-skip.ejs');
 
                     }).then(function () {
 
@@ -574,9 +563,6 @@ module.exports.resendActivationEmail = function(req, res) {
             crypto.randomBytes(20, function(error, buf) {
                 var token = buf.toString('hex');
                 //Pass token on to the next function
-                if (req.session.continueEAppFlow) {
-                    token = `${token}&continue_eApp=true`;
-                }
                 done(error, token);
             });
         },
@@ -629,12 +615,6 @@ module.exports.activate = function(req, res) {
     async.waterfall([
         function (done) {
             //Find User with the password token which has not expired
-            if (req.query.continue_eApp) {
-                req.session.continueEAppFlow = true;
-            }
-
-            console.log(req.params.token, 'activationToken')
-
             Model.User.findOne({
                 where: {
                     activationToken: req.params.token,
@@ -644,7 +624,6 @@ module.exports.activate = function(req, res) {
                 }
             })
                 .then(function (user) {
-                    console.log(user, 'user');
                     if (!user) {
                         req.flash('error', 'Activation reset token is invalid.  Sign in to send a new one.');
                         return res.redirect('/api/user/sign-in');
