@@ -8,6 +8,7 @@ var passport = require('passport'),
     Model = require('./model/models.js'),
     nextpage;
 const { Op } = require("sequelize");
+const sessionSettings = JSON.parse(process.env.THESESSION);
 
 module.exports = function(express,envVariables) {
     var router = express.Router();
@@ -51,6 +52,10 @@ module.exports = function(express,envVariables) {
 
 
     router.get('/sign-in', function(req, res) {
+        let sessionCookie = req.cookies[sessionSettings.key];
+        if (!sessionCookie) {
+            res.redirect(envVariables.applicationServiceURL + 'select-service?newSession=true')
+        }
         if (req.query.expired) {
             req.flash('info', 'You have been successfully signed out.');
         }
@@ -184,7 +189,7 @@ module.exports = function(express,envVariables) {
         req.session.destroy();
         res.clearCookie('express.sid');
         res.clearCookie('LoggedIn');
-        return res.redirect('/api/user/sign-in?expired=true');
+        return res.redirect(envVariables.applicationServiceURL + 'select-service?newSession=true&expired=true');
     });
 
     router.get('/forgot' , function(req,res){
