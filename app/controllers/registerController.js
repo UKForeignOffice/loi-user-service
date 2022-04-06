@@ -56,6 +56,10 @@ module.exports.show = function(req, res) {
         }
     }
 
+    if (req.query.next && req.query.next === 'continueEApp') {
+        req.session.continueEAppFlow = true;
+    }
+
     return res.render('register.ejs', {
         form_values: false,
         erroneousFields:false,
@@ -568,6 +572,7 @@ module.exports.resendActivationEmail = function(req, res) {
         },
         function(token, done) {
             //Find User with the password token which has not expired
+
             Model.User.findOne({
                 where: {
                     email: req.body.email,
