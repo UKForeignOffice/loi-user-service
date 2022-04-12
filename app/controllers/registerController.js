@@ -56,10 +56,6 @@ module.exports.show = function(req, res) {
         }
     }
 
-    if (req.query.next && req.query.next === 'continueEApp') {
-        req.session.continueEAppFlow = true;
-    }
-
     return res.render('register.ejs', {
         form_values: false,
         erroneousFields:false,
