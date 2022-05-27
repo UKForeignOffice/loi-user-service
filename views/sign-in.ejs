@@ -13,7 +13,7 @@
 <%if(!signed_out && !hide_back_link){%>
 <a href="<%= back_link%>" class="back-to-previous">Back</a>
 <%}%>
-<h1 class="heading-xlarge">Sign in</h1>
+<h1 class="heading-large">Sign in</h1>
 
 <div class="column-two-thirds">
     <script>var _paq = _paq || [];</script>
@@ -54,6 +54,9 @@
 
 
     <!-- LOGIN FORM -->
+    <p>
+        <a href="/api/user/register?from=/api/user/sign-in">Create an account</a> if you do not already have one.
+    </p>
     <form action="/api/user/sign-in?_csrf=<%=_csrf%>" method="post" id="sign-in">
         <input type="hidden" name="next" value="<%= qs.next %>" />
         <div class="form-group <%if(email_error){%>error<%}%>">
@@ -72,8 +75,9 @@
 
 
     </form>
+    <section class="govuk-inset-text">
+        Your application will time out and you will have to start again if you do not enter information for 30 minutes.
+    </section>
 </div>
-    <hr>
-    <p><a href="/api/user/register?from=/api/user/sign-in">Create an account</a></p>
 
 <%- include ('partials/footer') %>
