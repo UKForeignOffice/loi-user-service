@@ -74,7 +74,7 @@ app.set('view engine', 'ejs');
 app.use(function (req, res, next) {
     res.locals = {
         piwikID: environmentVariables.live_variables.piwikId,
-        feedbackURL:environmentVariables.live_variables.Public ? environmentVariables.live_variables.feedbackURL : "https://www.smartsurvey.co.uk/s/legalisation1/",
+        feedbackURL: environmentVariables.live_variables.feedbackURL,
         service_public: environmentVariables.live_variables.Public,
         start_url: environmentVariables.live_variables.startPageURL,
         govuk_url: environmentVariables.live_variables.GOVUKURL,
