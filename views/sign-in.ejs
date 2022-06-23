@@ -57,7 +57,7 @@
     <p>
         <a href="/api/user/register?from=/api/user/sign-in">Create an account</a> if you do not already have one.
     </p>
-    <form action="/api/user/sign-in?_csrf=<%=_csrf%>" method="post" id="sign-in">
+    <form action="/api/user/sign-in?_csrf=<%=_csrf%><% if (qs.eappid) { %>&eappid=<%= qs.eappid %><% } %>" method="post" id="sign-in">
         <input type="hidden" name="next" value="<%= qs.next %>" />
         <div class="form-group <%if(email_error){%>error<%}%>">
             <label for="email" class="form-label-bold">Email</label>

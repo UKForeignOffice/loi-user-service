@@ -9,6 +9,7 @@ var passport = require('passport'),
     nextpage;
 const { Op } = require("sequelize");
 const sessionSettings = JSON.parse(process.env.THESESSION);
+let eAppRedirectURL;
 
 module.exports = function(express,envVariables) {
     var router = express.Router();
@@ -109,10 +110,15 @@ module.exports = function(express,envVariables) {
         });
     });
 
-    router.post('/sign-in', function(req,res,next){
-            req.body.email = req.body.email.toLowerCase();
+    router.post('/sign-in', function(req,res,next) {
+            const eAppId = req.query.eappid;
 
+            req.body.email = req.body.email.toLowerCase();
             req.session.email = req.body.email;
+
+            if (eAppId) {
+                eAppRedirectURL = `${envVariables.applicationServiceURL}loading-dashboard?eappid=${eAppId}`
+            }
 
             if(!req.body.email){
                 if(!req.body.password) {
@@ -136,11 +142,16 @@ module.exports = function(express,envVariables) {
             successRedirect: '/api/user/dashboard',
             failureRedirect: '/api/user/sign-in',
             failureFlash: true
-        }));
+        })
+    );
 
     router.get('/dashboard', isAuthenticated, function(req, res) {
         // res.cookie('LoggedIn',true,{ httpOnly: true });
         res.cookie('LoggedIn',true,{ maxAge: 1800000, httpOnly: true });
+
+        if (eAppRedirectURL) {
+            return res.redirect(eAppRedirectURL);
+        }
 
         //set payment reference for user
         Model.User.findOne({where: {email: req.session.email}})
