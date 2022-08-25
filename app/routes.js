@@ -93,6 +93,9 @@ module.exports = function(express,envVariables) {
             }
         }
 
+        if (req.query.next && req.query.next === 'continueEApp') {
+            req.session.continueEAppFlow = true;
+        }
 
         return res.render('sign-in.ejs', {
             error: error,
