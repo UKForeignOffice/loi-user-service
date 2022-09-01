@@ -11,7 +11,8 @@ const express = require('express'),
     bodyParser = require('body-parser'),
     jsonParser = bodyParser.json(),
     cookieParser = require('cookie-parser'),
-    csrf = require('csurf');
+    csrf = require('csurf'),
+    lusca = require('lusca');
 
 require('./config/logs');
 require('dotenv').config();
@@ -26,6 +27,22 @@ app.use(function(req, res, next) {
     res.removeHeader("Server");
     return next();
 });
+
+app.use(lusca.csp({
+    policy: {
+        'default-src': "'none'",
+        'connect-src': process.env.NODE_ENV === 'development' ?
+            "'self' http://web-analytics.fco.gov.uk/piwik/piwik.php https://web-analytics.fco.gov.uk/piwik/piwik.php" :
+            "'self' https://web-analytics.fco.gov.uk/piwik/piwik.php",
+        'font-src': "'self' data:",
+        'form-action': process.env.NODE_ENV === 'development' ? "'self' https://www.payments.service.gov.uk localhost:*" : "'self' https://www.payments.service.gov.uk",
+        'img-src': "'self'",
+        'script-src': process.env.NODE_ENV === 'development' ?
+            "'self' 'unsafe-inline' http://web-analytics.fco.gov.uk/piwik/piwik.js https://web-analytics.fco.gov.uk/piwik/piwik.js localhost:*" :
+            "'self' 'unsafe-inline' https://web-analytics.fco.gov.uk/piwik/piwik.js",
+        'style-src': "'self' 'unsafe-inline'"
+    }
+}));
 
 app.use(function(req, res, next) {
     if (req.cookies['LoggedIn']){
