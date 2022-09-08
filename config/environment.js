@@ -17,8 +17,8 @@ var userAccountSettings = JSON.parse(process.env.USERACCOUNTSETTINGS);
 var pgPassword = process.env.PGPASSWORD;
 var Sequelize = require('sequelize');
 var accountManagementApiUrl = process.env.ACCOUNTMANAGEMENTAPIURL;
-var certPath = process.env.CASEBOOKCERTIFICATE;
-var keyPath = process.env.CASEBOOKKEY;
+var certPath = process.env.NODE_ENV !== 'development' ? process.env.CASEBOOKCERTIFICATE : process.env.CASEBOOKCERTIFICATE.replace(/\\n/gm, '\n');
+var keyPath = process.env.NODE_ENV !== 'development' ? process.env.CASEBOOKKEY : process.env.CASEBOOKKEY.replace(/\\n/gm, '\n');
 var hmacKey = process.env.HMACKEY;
 
 var config = {

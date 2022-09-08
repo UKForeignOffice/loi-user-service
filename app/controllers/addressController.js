@@ -5,12 +5,11 @@
  *
  */
 
-var async = require('async'),
-    crypto = require('crypto'),
-    Model = require('../model/models.js'),
+const Model = require('../model/models.js'),
     ValidationService = require('../services/ValidationService.js'),
     common = require('../../config/common.js'),
-    envVariables = common.config();
+    envVariables = common.config(),
+    rp = require('request-promise');
 
 
 
@@ -79,23 +78,23 @@ function showPostcodeLookup(req, res) {
 module.exports.showPostcodeLookup = showPostcodeLookup;
 
 module.exports.findAddress= function(req,res) {
-    var Postcode = require("postcode");
-    var postcode = '';
+    const Postcode = require("postcode");
+    let postcode = '';
 
 
     if(!req.query.postcode && !req.body['find-postcode']){
         return res.redirect('/api/user/add-address-uk?is_uk=true');
     }else if(req.query && req.query.postcode){
-        postcode = new Postcode(req.query.postcode.replace(/ /g,''));
+        postcode = Postcode.toNormalised(req.query.postcode)
     }else{
-        postcode = new Postcode(req.body['find-postcode'].replace(/ /g,''));
+        postcode = Postcode.toNormalised(req.body['find-postcode'])
     }
 
 
 
     Model.User.findOne({where:{email:req.session.email}}).then(function(user) {
         Model.AccountDetails.findOne({where:{user_id:user.id}}).then(function(account){
-            if(!postcode.valid()){
+            if(!postcode){
                 req.flash('error', 'Enter a valid postcode');
                 return res.render('address_pages/UKAddressSelect.ejs', {
                     initial: req.session.initial,
@@ -103,13 +102,13 @@ module.exports.findAddress= function(req,res) {
                     account:account,
                     url:envVariables,
                     addresses: false,
-                    postcode: postcode.normalise(),
+                    postcode: postcode,
                     error_report:req.flash('error')
                 });
             }else {
-                postcodeLookup(postcode.normalise()).then(function (results) {
+                postcodeLookup(postcode).then(function (results) {
                     var addresses = [];
-                    if (JSON.parse(results).message == 'No matching address found: no response') {
+                    if (JSON.parse(results).message === 'No matching address found: no response') {
                         req.flash('error', 'No addresses found');
                         addresses = false;
                     } else {
@@ -139,7 +138,7 @@ module.exports.findAddress= function(req,res) {
                                 street: address.street !== null && address.street !== 'undefined' && address.street !== undefined ? address.street : '',
                                 town: address.town !== null && address.town !== 'undefined' && address.town !== undefined ? toTitleCase(address.town) : '',
                                 county: address.county !== null && address.county !== 'undefined' && address.county !== undefined ? address.county : '',
-                                postcode:  postcode.normalise()
+                                postcode:  postcode
                             });
                         });
                     }
@@ -152,7 +151,7 @@ module.exports.findAddress= function(req,res) {
                         account:account,
                         url:envVariables,
                         addresses: addresses,
-                        postcode: postcode.normalise(),
+                        postcode: postcode,
                         error_report:req.flash('error')
                     });
 
@@ -168,11 +167,10 @@ module.exports.findAddress= function(req,res) {
                             account:account,
                             url:envVariables,
                             addresses: false,
-                            postcode: postcode.normalise(),
+                            postcode: postcode,
                             error_report:req.flash('error'),
                             error_heading:'Postcode search is not available at the moment'
                         });
-                        return  res.view("address_pages/UKAddressSelect.ejs",options);
                     }
                     );
             }
@@ -194,16 +192,17 @@ module.exports.ajaxFindPostcode = function(req,res) {
     if(!req.body){
         return res.redirect('your-'+address_type+'-address-uk?is_uk=true');
     }
-    var Postcode = require("postcode");
-    var postcode = new Postcode(req.body['find-postcode'].replace(/ /g,''));
+    const Postcode = require('postcode');
+    const postcode = Postcode.toNormalised(req.body['find-postcode'])
 
-    if(!postcode.valid()){
+
+    if(!postcode){
         return  res.json({error:'Enter a valid postcode'});
     }else {
-        postcodeLookup(postcode.normalise()).then(function (results) {
+        postcodeLookup(postcode).then(function (results) {
             var return_error = false;
             var addresses = [];
-            if (JSON.parse(results).message == 'No matching address found: no response') {
+            if (JSON.parse(results).message === 'No matching address found: no response') {
                 req.flash('error', 'No addresses found');
                 addresses = false;
             } else {
@@ -233,13 +232,13 @@ module.exports.ajaxFindPostcode = function(req,res) {
                         street: address.street !== null && address.street !== 'undefined' && address.street !== undefined ? address.street : '',
                         town: address.town !== null && address.town !== 'undefined' && address.town !== undefined ? toTitleCase(address.town) : '',
                         county: address.county !== null && address.county !== 'undefined' && address.county !== undefined ? address.county : '',
-                        postcode:  postcode.normalise()
+                        postcode: postcode
                     });
                 });
             }
             //todo: remove this from session, better to write it to the page as a hidden block than to risk polluting the session with a massive block of json
             req.session.addresses = addresses;
-            return res.json( {error:return_error, addresses: addresses, postcode:  postcode.normalise()});
+            return res.json( {error:return_error, addresses: addresses, postcode:  postcode});
         },
         function(err)
         {
@@ -252,8 +251,10 @@ module.exports.ajaxFindPostcode = function(req,res) {
 module.exports.ajaxSelectAddress= function(req,res) {
     Model.User.findOne({where:{email:req.session.email}}).then(function(user) {
         Model.AccountDetails.findOne({where:{user_id:user.id}}).then(function(account) {
+            const chosenAddressIndex = req.body.chosen;
             return res.json({
-                full_name: account.first_name+' '+account.last_name, address: req.session.addresses[req.param('chosen')]
+                full_name: account.first_name + ' ' + account.last_name,
+                address: req.session.addresses[chosenAddressIndex]
             });
         });
     });
@@ -332,13 +333,13 @@ module.exports.saveAddress= function(req,res) {
                 mobileNo = null;
             }
             var Postcode = require("postcode");
-            var postcodeObject = new Postcode(req.body.postcode.replace(/ /g,''));
+            var postcodeObject = Postcode.toNormalised(req.body.postcode)
             var postcode = ' ';
             if(country!='United Kingdom' ){
                 postcode =  req.body.postcode.trim().length===0 ? ' ' : req.body.postcode.length > 1 ? req.body.postcode : postcode;
             }
             else{
-                postcode =  postcodeObject.valid() ? postcodeObject.normalise() :'';
+                postcode =  (postcodeObject) ? postcodeObject : '';
             }
 
 
@@ -364,8 +365,10 @@ module.exports.saveAddress= function(req,res) {
             }).then(function(){
                 if(req.session.initial===true){
                     req.session.initial=false;
+                    console.log(`address successfully added for user ${user.id}`)
                     return res.redirect('/api/user/dashboard?complete=true');
                 }else {
+                    console.log(`address successfully added for user ${user.id}`)
                     return res.redirect('/api/user/addresses');
                 }
             }).catch(function (error) {
@@ -451,13 +454,13 @@ module.exports.editAddress= function(req,res) {
         mobileNo = null;
     }
     var Postcode = require("postcode");
-    var postcodeObject = new Postcode(req.body.postcode.replace(/ /g,''));
+    var postcodeObject = Postcode.toNormalised(req.body.postcode)
     var postcode = ' ';
     if(country!='United Kingdom' ){
         postcode =  req.body.postcode.trim().length===0 ? ' ' : req.body.postcode.length > 1 ? req.body.postcode : postcode;
     }
     else{
-        postcode =  postcodeObject.valid() ? postcodeObject.normalise() :'';
+        postcode =  (postcodeObject) ? postcodeObject : '';
     }
 
 
@@ -531,11 +534,11 @@ module.exports.deleteAddress= function(req,res) {
 
                     if(result == true)
                     {
-                        console.log("address successfully deleted for user %s and id %s", user.id, req.query.id)
+                        console.log(`address successfully deleted for user ${user.id} and id ${req.query.id}`)
                         req.flash('info', 'Address successfully deleted');
                     }
                     else {
-                        console.log("address not deleted for user %s and id %s", user.id, req.query.id)
+                        console.log(`address not deleted for user ${user.id} and id ${req.query.id}`)
                     }
                     return res.redirect('/api/user/addresses');
                 })
@@ -547,18 +550,13 @@ module.exports.deleteAddress= function(req,res) {
 
 };
 
-function postcodeLookup(postcode) {
-    var rp = require('request-promise');
-    var options = JSON.parse(JSON.stringify(envVariables.postcodeLookUpApiOptions));
-    console.log("options uri: " + options.uri)
-    console.log("options time: " + options.timeout)
+function postcodeLookup(normalisedPostcode) {
+    const postcode = normalisedPostcode.replace(/ /g, '');
+    const options = { ...envVariables.postcodeLookUpApiOptions, uri: envVariables.postcodeLookUpApiOptions.uri + postcode };
 
-    return rp({
-            uri: options.uri+postcode,
-            timeout: options.timeout
-        },
-        function(err){
-            console.log(err)
+    return rp(options)
+        .catch(err => {
+            console.error(err);
         });
 }
 
