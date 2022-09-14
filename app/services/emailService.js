@@ -90,6 +90,38 @@ emailService = {
                 console.log('[USER CLEANUP JOB] EXPIRY EMAIL SENT SUCCESSFULLY FOR USER ' + userID);
             }
         });
+    },
+    requestPremiumAccess: async function(emailData){
+
+        var url = '/request-premium-access';
+
+        // send request to notification service
+        request(setOptions(emailData, url), function (err) {
+            if(err) {
+                console.log(err);
+            } else {
+                console.log('PREMIUM SERVICE APPLICATION REQUEST SENT SUCCESSFULLY FOR USER ' + emailData.userID);
+            }
+        });
+    },
+    premiumServiceDecision: async function(emailData, decision){
+
+        var url = '/premium-service-decision';
+        var postData = {to: emailData.email, decision: decision};
+
+        // send request to notification service
+        request(setOptions(postData, url), function (err) {
+            if(err) {
+                console.log(err);
+            } else {
+                if (decision === 'approve') {
+                    console.log('PREMIUM SERVICE ACCESS APPROVAL EMAIL SENT SUCCESSFULLY FOR USER ' + emailData.id);
+                } else {
+                    console.log('PREMIUM SERVICE ACCESS REJECTION EMAIL SENT SUCCESSFULLY FOR USER ' + emailData.id);
+                }
+
+            }
+        });
     }
 };
 

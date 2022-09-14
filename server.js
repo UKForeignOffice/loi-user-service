@@ -34,7 +34,7 @@ app.use(function(req, res, next) {
     return next();
 });
 
-const port = (process.argv[2] && !isNaN(process.argv[2])  ? process.argv[2] : (process.env.PORT || 8080));
+const port = (process.argv[2] && !isNaN(process.argv[2])  ? process.argv[2] : (process.env.PORT || 3001));
 
 const session = require("express-session")
 let RedisStore = require("connect-redis")(session)
@@ -78,6 +78,7 @@ app.use(function (req, res, next) {
         service_public: environmentVariables.live_variables.Public,
         start_url: environmentVariables.live_variables.startPageURL,
         govuk_url: environmentVariables.live_variables.GOVUKURL,
+        premiumServiceActivationDate: environmentVariables.live_variables.premiumServiceActivationDate,
         _csrf: req.csrfToken()
     };
     next();
