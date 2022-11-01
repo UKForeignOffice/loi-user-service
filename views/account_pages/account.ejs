@@ -4,6 +4,7 @@
 
 <%- include ('../partials/inner-header.ejs') %>
 <div class="column-two-thirds">
+
     <h1 class="heading-xlarge" style="margin-bottom: 25px">Personal details</h1>
     <% if (info.length > 0) { %>
     <div class="alert alert--success" role="alert"><p class="alert__message"><%= info %></p></div>
@@ -93,9 +94,14 @@
 
     </div>
 </div>
-<%}else{%>
+<%}%>
+<% if (!user.premiumEnabled) {%>
 <div class="column-two-thirds">
    <p>If you represent a business you can <a class="govuk-link" href="/api/user/upgrade-account">register for the legalisation premium service</a></p>
+</div>
+<%} else if (!user.premiumServiceEnabled && user.noOfPremiumRequestAttempts <= 3 && user.premiumUpgradeToken === null) {%>
+<div class="column-two-thirds">
+   <p>If you represent a business you can <a class="govuk-link" href="/api/user/request-premium-service-access?from=account">register for the legalisation premium service</a></p>
 </div>
 <%}%>
 

@@ -5,6 +5,7 @@ var passport = require('passport'),
     passwordController = require('./controllers/passwordController.js'),
     accountController = require('./controllers/accountController.js'),
     addressController = require('./controllers/addressController.js'),
+    requestPremiumServiceAccessController = require('./controllers/requestPremiumServiceAccessController.js'),
     Model = require('./model/models.js'),
     nextpage;
 const { Op } = require("sequelize");
@@ -163,6 +164,7 @@ module.exports = function(express,envVariables) {
                     Model.AccountDetails.findOne({where: {user_id: user.id}})
                         .then(function (account) {
                             if (account!==null && account.complete) {
+
                                 // set payment reference in session
                                 req.session.payment_reference = user.payment_reference;
                                 var queryString = '?';
@@ -249,7 +251,6 @@ module.exports = function(express,envVariables) {
     router.get('/upgrade-account',sessionValid,accountController.showUpgradeAccount);
     router.post('/upgrade-account',sessionValid,accountController.upgradeAccount);
     router.get('/change-email',sessionValid,accountController.changeEmail);
-
     router.get('/addresses',sessionValid,accountController.showAddresses);
 
     router.get('/add-address',sessionValid, addressController.showUKQuestion);
@@ -271,6 +272,11 @@ module.exports = function(express,envVariables) {
     router.get('/edit-address',sessionValid,addressController.showEditAddress);
     router.post('/edit-address',sessionValid,addressController.editAddress);
     router.get('/delete-address',sessionValid,addressController.deleteAddress);
+
+    router.get('/request-premium-service-access',sessionValid,requestPremiumServiceAccessController.showRequestPremiumServiceAccess);
+    router.post('/request-premium-service-access',sessionValid,requestPremiumServiceAccessController.requestPremiumServiceAccess);
+    router.get('/approve/:token', requestPremiumServiceAccessController.approve);
+    router.get('/reject/:token', requestPremiumServiceAccessController.reject);
 
     return router;
 };

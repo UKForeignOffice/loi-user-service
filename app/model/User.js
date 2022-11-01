@@ -133,9 +133,17 @@ var attributes = {
     },
     expiryConfirmationSent:{
         type:'boolean', default: false
+    },
+    premiumUpgradeToken:{
+        type: 'string'
+    },
+    premiumServiceEnabled: {
+        type: 'boolean',
+        default: false
+    },
+    noOfPremiumRequestAttempts: {
+        type: 'integer'
     }
-
-
 };
 
 var options = {
