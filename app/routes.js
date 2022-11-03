@@ -248,8 +248,6 @@ module.exports = function(express,envVariables) {
     router.post('/change-password',sessionValid,accountController.changePassword);
     router.get('/change-company-details',sessionValid,accountController.showChangeCompanyDetails);
     router.post('/change-company-details',sessionValid,accountController.changeCompanyDetails);
-    router.get('/upgrade-account',sessionValid,accountController.showUpgradeAccount);
-    router.post('/upgrade-account',sessionValid,accountController.upgradeAccount);
     router.get('/change-email',sessionValid,accountController.changeEmail);
     router.get('/addresses',sessionValid,accountController.showAddresses);
 
