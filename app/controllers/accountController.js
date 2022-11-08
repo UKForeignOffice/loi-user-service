@@ -5,18 +5,76 @@
  *
  */
 
-var async = require('async'),
-    crypto = require('crypto'),
-    request = require('request');
-    config = require('../../config/environment'),
+
+const config = require('../../config/environment'),
     fs = require('fs'),
     Model = require('../model/models.js'),
     ValidationService = require('../services/ValidationService.js'),  common = require('../../config/common.js'),
-    envVariables = common.config();
+    envVariables = common.config(),
+    request = require('request'),
+    crypto = require('crypto'),
+    async = require('async');
 
 var mobilePattern = /^(\+|\d|\(|\#| )(\+|\d|\(| |\-)([0-9]|\(|\)| |\-){5,14}$/;
 var phonePattern = /^(\+|\d|\(|\#| )(\+|\d|\(| |\-)([0-9]|\(|\)| |\-){5,14}$/;
     //old pattern /([0-9]|[\-+#() ]){6,}/;
+
+function sendToCasebook(objectString, accountManagementObject, user) {
+
+    var hash = crypto.createHmac('sha512', config.hmacKey).update(new Buffer.from(objectString, 'utf-8')).digest('hex').toUpperCase();
+
+    request.post({
+        headers: {
+            "accept": "application/json",
+            "hash": hash,
+            "content-type": "application/json; charset=utf-8",
+            "api-version": "3"
+        },
+        url: config.accountManagementApiUrl,
+        agentOptions: config.certPath ? {
+            cert: config.certPath,
+            key: config.keyPath
+        } : null,
+        json: true,
+        body: accountManagementObject
+    }, function (error, response, body) {
+        if (error) {
+            console.log(JSON.stringify(error));
+        } else if (response.statusCode === 200) {
+            console.log('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE SENT TO CASEBOOK SUCCESSFULLY FOR USER_ID ' + user.id);
+        } else {
+            console.error('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE FAILED SENDING TO CASEBOOK FOR USER_ID ' + user.id);
+            console.error('response code: ' + response.code);
+            console.error(body);
+        }
+    })
+
+}
+
+function sendToOrbit(accountManagementObject, user) {
+    var edmsManagePortalCustomerUrl = config.edmsHost + '/api/v1/managePortalCustomer'
+    var edmsBearerToken = config.edmsBearerToken
+
+    request.post({
+        headers: {
+            'content-type': 'application/json',
+            'Authorization': `Bearer ${edmsBearerToken}`
+        },
+        url: edmsManagePortalCustomerUrl,
+        json: true,
+        body: accountManagementObject
+    }, function (error, response, body) {
+        if (error) {
+            console.log(JSON.stringify(error));
+        } else if (response.statusCode === 200) {
+            console.log('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE SENT TO ORBIT SUCCESSFULLY FOR USER_ID ' + user.id);
+        } else {
+            console.error('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE FAILED SENDING TO ORBIT FOR USER_ID ' + user.id);
+            console.error('response code: ' + response.code);
+            console.error(body);
+        }
+    })
+}
 
 module.exports.showAccount = function(req, res) {
     Model.User.findOne({where:{email:req.session.email}}).then(function(user) {
@@ -97,6 +155,9 @@ module.exports.changeDetails = function(req, res) {
                             return res.redirect('/api/user/account');
                         })
                         .then(function () {
+
+                            let companyName = (user.premiumServiceEnabled) ? data.company_name : ""
+
                             if (req.body.mobileNo != '') {
                                 var accountManagementObject = {
                                     "portalCustomerUpdate": {
@@ -110,8 +171,8 @@ module.exports.changeDetails = function(req, res) {
                                             "mobileTelephone": mobilePattern.test(req.body.mobileNo) ? req.body.mobileNo : '',
                                             "eveningTelephone": "",
                                             "email": req.session.email,
-                                            "companyName": data.company_name !== 'N/A' ? data.company_name : "",
-                                            "companyRegistrationNumber": data.company_number
+                                            "companyName": companyName,
+                                            "companyRegistrationNumber": ''
                                         }
                                     }
                                 };
@@ -129,8 +190,8 @@ module.exports.changeDetails = function(req, res) {
                                             "mobileTelephone": null,
                                             "eveningTelephone": "",
                                             "email": req.session.email,
-                                            "companyName": data.company_name !== 'N/A' ? data.company_name : "",
-                                            "companyRegistrationNumber": data.company_number
+                                            "companyName": companyName,
+                                            "companyRegistrationNumber": ''
                                         }
                                     }
                                 };
@@ -138,34 +199,9 @@ module.exports.changeDetails = function(req, res) {
 
                         // calculate HMAC string and encode in base64
                         var objectString = JSON.stringify(accountManagementObject, null, 0);
-                        var hash = crypto.createHmac('sha512', config.hmacKey).update(new Buffer.from(objectString, 'utf-8')).digest('hex').toUpperCase();
+                        sendToCasebook(objectString, accountManagementObject, user)
+                        sendToOrbit(accountManagementObject, user)
 
-
-                        request.post({
-                            headers: {
-                                "accept": "application/json",
-                                "hash": hash,
-                                "content-type": "application/json; charset=utf-8",
-                                "api-version": "3"
-                            },
-                            url: config.accountManagementApiUrl,
-                            agentOptions: config.certPath ? {
-                                cert: config.certPath,
-                                key: config.keyPath
-                            } : null,
-                            json: true,
-                            body: accountManagementObject
-                        }, function (error, response, body) {
-                            if (error) {
-                                console.log(JSON.stringify(error));
-                            } else if (response.statusCode === 200) {
-                                console.log('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE SENT TO CASEBOOK SUCCESSFULLY FOR USER_ID ' + user.id);
-                            } else {
-                                console.error('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE FAILED SENDING TO CASEBOOK FOR USER_ID ' + user.id);
-                                console.error('response code: ' + response.code);
-                                console.error(body);
-                            }
-                        })
                     })
                         .catch(function (error) {
                             console.log(error);
@@ -291,7 +327,7 @@ module.exports.changeCompanyDetails = function(req, res) {
                                             "eveningTelephone": "",
                                             "email": req.session.email,
                                             "companyName": req.body.company_name,
-                                            "companyRegistrationNumber": data.company_number
+                                            "companyRegistrationNumber": ''
                                         }
                                     }
                                 };
@@ -310,44 +346,17 @@ module.exports.changeCompanyDetails = function(req, res) {
                                             "eveningTelephone": "",
                                             "email": req.session.email,
                                             "companyName": req.body.company_name,
-                                            "companyRegistrationNumber": data.company_number
+                                            "companyRegistrationNumber": ''
                                         }
                                     }
                                 };
                             }
 
-
-                            // calculate HMAC string and encode in base64
                             var objectString = JSON.stringify(accountManagementObject, null, 0);
-                            var hash = crypto.createHmac('sha512', config.hmacKey).update(new Buffer.from(objectString, 'utf-8')).digest('hex').toUpperCase();
 
 
-                            request.post({
-                                headers: {
-                                    "accept": "application/json",
-                                    "hash": hash,
-                                    "content-type": "application/json; charset=utf-8",
-                                    "api-version": "3"
-                                },
-                                url: config.accountManagementApiUrl,
-                                agentOptions: config.certPath ? {
-                                    cert: config.certPath,
-                                    key: config.keyPath
-                                } : null,
-                                json: true,
-                                body: accountManagementObject
-                            }, function (error, response, body) {
-                                if (error) {
-                                    console.log(JSON.stringify(error));
-                                } else if (response.statusCode === 200) {
-                                    console.log('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE SENT TO CASEBOOK SUCCESSFULLY FOR USER_ID ' + user.id);
-                                } else {
-                                    console.error('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE FAILED SENDING TO CASEBOOK FOR USER_ID ' + user.id);
-                                    console.error('response code: ' + response.code);
-                                    console.error(body);
-                                }
-                            });
-
+                            sendToCasebook(objectString, accountManagementObject, user)
+                            sendToOrbit(accountManagementObject, user)
                             return res.redirect('/api/user/account');
                         })
                         .catch(function (error) {
