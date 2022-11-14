@@ -36,13 +36,12 @@ module.exports = function(app,passport) {
                         return done(null, false, { message: 'Account expired' });
                     }
                     else {
-                        var  accountExpiry= new Date(new Date().setYear(new Date().getFullYear() + 1));
+                        var  accountExpiry= new Date(new Date().setFullYear(new Date().getFullYear() + 1));
                         Model.User.update({failedLoginAttemptCount: 0, accountExpiry:accountExpiry, warningSent:false, expiryConfirmationSent:false}, {
                             where: {
                                 'email': email
                             }
                         }).then(function () {
-                            console.info('SUCCESSFUL LOGIN FOR USER ' + user.id);
                             return done(null, user);
 
                         });
