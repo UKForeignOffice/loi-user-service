@@ -1,0 +1,62 @@
+<% pageTitle = "Enter one time password - Get a document legalised – GOV.UK" %>
+
+<%if(error){
+    pageTitle = "Error: Enter one time password - Get a document legalised – GOV.UK"
+} %>
+<%- include ('../partials/header.ejs') %>
+
+<%if(back_link){%>
+    <a href="<%= back_link%>" class="back_to_previous_button govuk-link">Back</a>
+<%}%>
+
+<%if(error){%>
+<br />
+    <div class="govuk-error-summary show" role="alert" aria-labelledby="error-summary-heading-example-2" tabindex="-1" autofocus>
+      <p class="govuk-error-summary__title" id="error-summary-title"> There is a problem </p>
+      <div id="all-errors">
+        <ul class="govuk-list govuk-error-summary__list">
+        <%errorsArray.forEach(function(err){%>
+            <li>
+                <a href="#<%= err.fieldName %>"><%= err.fieldError %> </a>
+            </li>
+        <% }) %>
+        </ul>
+      </div>
+    </div>
+<%}%>
+
+<% if (info.length > 0) { %>
+<br />
+    <div class="alert alert--success" role="alert"><p class="alert__message"><%= info %></p></div>
+<% } %>
+
+<h1 class="heading-xlarge">Check your phone</h1>
+
+    <p>We’ve sent you a text message with a security code.</p>
+
+    <p>The code will be valid for 10 minutes.</p>
+
+    <form action="/api/user/validate-sms-totp?_csrf=<%=_csrf%>" method="post" class="column-two-thirds">
+
+        <div class="govuk-form-group">
+            <label class="form-label-bold" for="passcode">Security code</label>
+            <span class="error-message">
+                    <%if (error) { %>
+                          <%errorsArray.forEach(function(err){%>
+                               <% if (err.fieldName === 'passcode') { %>
+                                    <%= err.fieldError %>
+                               <% } %>
+                          <% }) %>
+                    <%}%>
+            </span>
+            <input class="govuk-input govuk-input--width-4" aria-required="true"  id="passcode" name="passcode" autocomplete="off" type="text" maxlength="6" >
+            <p><a href="/api/user/validate-sms-totp?resendPasscode=true">Resend code</a></p>
+        </div>
+
+        <input type="hidden" id="mobileNo" name="mobileNo" value="<%= mobileNo %>">
+        <input type="submit" class="button" value="Continue">
+
+    </form>
+
+
+<%- include ('../partials/footer.ejs') %>

@@ -160,7 +160,6 @@ var ValidationService = {
             }
         }
 
-console.log(req.body.postcode === '' || req.body.postcode.length >20);
         var dataValues = [];
         dataValues.push(
             {

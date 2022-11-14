@@ -7,6 +7,34 @@ var request = require('request'),
 
 
 emailService = {
+    sendOneTimePasscodeEmail: function(oneTimePasscode, email, userId){
+
+        var url = '/one_time_passcode_email';
+        var postData= {to: email, oneTimePasscode: oneTimePasscode};
+
+        request(setOptions(postData, url), function (err, res) {
+            if(err) {
+                console.log(err);
+            } else {
+                console.log('%s - One time passcode email sent for user %s', res.statusCode, userId);
+            }
+        });
+
+    },
+    sendOneTimePasscodeSMS: function(oneTimePasscode, phoneNumber, userId){
+
+        var url = '/one_time_passcode_sms';
+        var postData= {to: phoneNumber, oneTimePasscode: oneTimePasscode};
+
+        request(setOptions(postData, url), function (err, res) {
+            if(err) {
+                console.log(err);
+            } else {
+                console.log('%s - One time passcode sms sent for user %s', res.statusCode, userId);
+            }
+        });
+
+    },
     lockedOut: function(name,email){
 
         var url = '/account_locked';
