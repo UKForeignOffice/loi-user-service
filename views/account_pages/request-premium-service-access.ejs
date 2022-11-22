@@ -30,13 +30,8 @@
 <div class="column-two-thirds">
     <h1 class="heading-xlarge">Apply to use the Premium Service</h1>
 
-    <% if (user.premiumEnabled) { %>
-        <p>Your access to the premium service will expire if you do not supply the required evidence. You can choose to <a href="<%= back_link%>" class="govuk-link">skip this process</a> and apply at a later time.</p>
-    <% } %>
-
     <p>The premium service is a counter service for pre-registered businesses only, who have a genuine business need for regular access to a same-day legalisation service.</p>
-
-    <p>The existing process is still valid until <b><%= premiumServiceActivationDate %></b>.</p>
+    <p>You can choose to <a href="<%= back_link%>" class="govuk-link">skip this process</a> and apply at a later time.</p>
 
 <form action="/api/user/request-premium-service-access?_csrf=<%=_csrf%>" method="post" id="request-premium-service-access">
 
@@ -51,7 +46,7 @@
             <% }) %>
         <%}%>
     </span>
-    <input class="govuk-input govuk-!-width-one-half" name="company-name" type="text" id="company-name" value="<% if (form_values && form_values['company-name'] !== '') { %><%= form_values['company-name'] %><% } else if (account && account.company_name !== null) { %><%= account.company_name %><% } %>">
+    <input class="govuk-input govuk-!-width-one-half" name="company-name" type="text" id="company-name" value="<% if (form_values && form_values['company-name'] !== '' ) { %><%= form_values['company-name'] %><% } else if (account && account.company_name !== null && account.company_name !== 'N/A') { %><%= account.company_name %><% } %>">
 </div>
 
 <div class="govuk-form-group <% if(error){errorsArray.forEach(function(err){if(err.fieldName==='companies-house-number'){%>error<%}})} %>">

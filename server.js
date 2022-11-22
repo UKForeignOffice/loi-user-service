@@ -78,7 +78,6 @@ app.use(function (req, res, next) {
         service_public: environmentVariables.live_variables.Public,
         start_url: environmentVariables.live_variables.startPageURL,
         govuk_url: environmentVariables.live_variables.GOVUKURL,
-        premiumServiceActivationDate: environmentVariables.live_variables.premiumServiceActivationDate,
         _csrf: req.csrfToken()
     };
     next();

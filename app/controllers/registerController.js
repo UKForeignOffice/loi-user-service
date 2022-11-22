@@ -287,7 +287,7 @@ module.exports.register = function(req, res) {
                                     activationToken: token,
                                     activated: false,
                                     activationTokenExpires:expire,
-                                    premiumEnabled: req.body.business_yes_no == 'Yes' ? true : false,
+                                    premiumServiceEnabled: false,
                                     allInfoCorrect:allInfoCorrect,
                                     accountExpiry:date_shift(new Date(),365),
                                     warningSent:false,

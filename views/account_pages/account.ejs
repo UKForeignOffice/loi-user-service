@@ -74,7 +74,7 @@
 
 </div>
 
-<%if(user.premiumEnabled){%>
+<%if(user.premiumServiceEnabled){%>
 <h1 class="heading-xlarge" style="margin-bottom: 25px">Company details</h1>
 
 <div class="column-two-thirds" style="margin-bottom: 50px">
@@ -95,11 +95,7 @@
     </div>
 </div>
 <%}%>
-<% if (!user.premiumEnabled) {%>
-<div class="column-two-thirds">
-   <p>If you represent a business you can <a class="govuk-link" href="/api/user/upgrade-account">register for the legalisation premium service</a></p>
-</div>
-<%} else if (!user.premiumServiceEnabled && user.noOfPremiumRequestAttempts <= 3 && user.premiumUpgradeToken === null) {%>
+<% if (!user.premiumServiceEnabled && user.noOfPremiumRequestAttempts <= 3 && user.premiumUpgradeToken === null) {%>
 <div class="column-two-thirds">
    <p>If you represent a business you can <a class="govuk-link" href="/api/user/request-premium-service-access?from=account">register for the legalisation premium service</a></p>
 </div>
