@@ -39,7 +39,7 @@
             <label class="form-label-bold"  for="find-postcode">Enter postcode</label>
             <% if(typeof(error_report)!='undefined'){%><span class="error-message"><%= error_report%></span><%}%>
 
-            <input class="govuk-input govuk-!-width-one-quarter" aria-required="true" id="find-postcode" type="text"
+            <input class="govuk-input govuk-!-width-one-quarter" style="margin-right: 10px;" aria-required="true" id="find-postcode" type="text"
                    name="find-postcode">
             <button class="govuk-button govuk-button--secondary" data-csrf="<%=_csrf%>" type="submit" id="find-address">Find UK address</button>
             <a class="link address-manual" id="address-manual" href="/api/user/your-address-manual" >Enter address manually</a>

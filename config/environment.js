@@ -17,6 +17,8 @@ var userAccountSettings = JSON.parse(process.env.USERACCOUNTSETTINGS);
 var pgPassword = process.env.PGPASSWORD;
 var Sequelize = require('sequelize');
 var accountManagementApiUrl = process.env.ACCOUNTMANAGEMENTAPIURL;
+var edmsHost = process.env.EDMS_HOST;
+var edmsBearerToken = JSON.parse(process.env.EDMS_BEARER_TOKEN);
 var certPath = process.env.CASEBOOKCERTIFICATE;
 var keyPath = process.env.CASEBOOKKEY;
 var hmacKey = process.env.HMACKEY;
@@ -35,6 +37,8 @@ var config = {
     "userAccountSettings": userAccountSettings,
     "live_variables":live_variables,
     "accountManagementApiUrl":accountManagementApiUrl,
+    "edmsHost":edmsHost,
+    "edmsBearerToken":edmsBearerToken['EDMS-Web-Submissions-Token'],
     "certPath":certPath,
     "keyPath":keyPath,
     "hmacKey":hmacKey

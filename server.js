@@ -34,7 +34,7 @@ app.use(function(req, res, next) {
     return next();
 });
 
-const port = (process.argv[2] && !isNaN(process.argv[2])  ? process.argv[2] : (process.env.PORT || 8080));
+const port = (process.argv[2] && !isNaN(process.argv[2])  ? process.argv[2] : (process.env.PORT || 3001));
 
 const session = require("express-session")
 let RedisStore = require("connect-redis")(session)

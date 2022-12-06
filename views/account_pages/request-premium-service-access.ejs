@@ -1,0 +1,116 @@
+<% pageTitle = "Request access to the premium service - Get a document legalised – GOV.UK" %>
+
+<%if(error){
+    pageTitle = "Error: Request access to the premium service - Get a document legalised – GOV.UK"
+} %>
+
+<%- include ('../partials/header.ejs') %>
+<%- include ('../partials/inner-header.ejs') %>
+
+<%if(back_link){%>
+    <a href="<%= back_link%>" class="back_to_previous_button govuk-link">Back</a>
+<%}%>
+
+<%if(error){%>
+<br>
+<div class="govuk-error-summary show" role="alert" aria-labelledby="error-summary-heading-example-2" tabindex="-1" autofocus>
+  <p class="govuk-error-summary__title" id="error-summary-title"> There is a problem </p>
+  <div id="all-errors">
+    <ul class="govuk-list govuk-error-summary__list">
+    <%errorsArray.forEach(function(err){%>
+        <li>
+            <a href="#<%= err.fieldName %>"><%= err.fieldError %> </a>
+        </li>
+    <% }) %>
+    </ul>
+  </div>
+</div>
+<%}%>
+
+<div class="column-two-thirds">
+    <h1 class="heading-xlarge">Apply to use the Premium Service</h1>
+
+    <p>The premium service is a counter service for pre-registered businesses only, who have a genuine business need for regular access to a same-day legalisation service.</p>
+    <p>You can choose to <a href="<%= back_link%>" class="govuk-link">skip this process</a> and apply at a later time.</p>
+
+<form action="/api/user/request-premium-service-access?_csrf=<%=_csrf%>" method="post" id="request-premium-service-access">
+
+<div class="govuk-form-group <% if(error){errorsArray.forEach(function(err){if(err.fieldName==='company-name'){%>error<%}})} %>">
+    <label class="form-label-bold" for="company-name">Company name</label>
+    <span class="error-message">
+        <%if (error) { %>
+            <%errorsArray.forEach(function(err){%>
+                 <% if (err.fieldName === 'company-name') { %>
+                      <%= err.fieldError %>
+                 <% } %>
+            <% }) %>
+        <%}%>
+    </span>
+    <input class="govuk-input govuk-!-width-one-half" name="company-name" type="text" id="company-name" value="<% if (form_values && form_values['company-name'] !== '' ) { %><%= form_values['company-name'] %><% } else if (account && account.company_name !== null && account.company_name !== 'N/A') { %><%= account.company_name %><% } %>">
+</div>
+
+<div class="govuk-form-group <% if(error){errorsArray.forEach(function(err){if(err.fieldName==='companies-house-number'){%>error<%}})} %>">
+    <label class="form-label-bold" for="companies-house-number">Companies House number</label>
+    <span class="error-message">
+        <%if (error) { %>
+              <%errorsArray.forEach(function(err){%>
+                   <% if (err.fieldName === 'companies-house-number') { %>
+                        <%= err.fieldError %>
+                   <% } %>
+              <% }) %>
+        <%}%>
+    </span>
+    <input class="govuk-input govuk-!-width-one-half" name="companies-house-number" type="text" id="companies-house-number" value="<% if (form_values && form_values['companies-house-number'] !== '') { %><%= form_values['companies-house-number'] %><% } %>">
+</div>
+
+<div class="govuk-form-group <% if(error){errorsArray.forEach(function(err){if(err.fieldName==='business-area'){%>error<%}})} %>">
+  <label class="form-label-bold" for="business-area">
+    Describe your business area
+  </label>
+  <span class="error-message">
+      <%if (error) { %>
+           <%errorsArray.forEach(function(err){%>
+                <% if (err.fieldName === 'business-area') { %>
+                     <%= err.fieldError %>
+                <% } %>
+           <% }) %>
+      <%}%>
+  </span>
+  <select class="govuk-select" style="font-size: 19px; height:40px !important;" id="business-area" name="business-area">
+    <option value="Please select">Please select</option>
+    <option value="Notarial" <% if (form_values && form_values['business-area'] === 'Notarial') { %> selected <% } %>>Notarial</option>
+    <option value="Solicitors" <% if (form_values && form_values['business-area'] === 'Solicitors') { %> selected <% } %>>Solicitors</option>
+    <option value="Legal Firm" <% if (form_values && form_values['business-area'] === 'Legal Firm') { %> selected <% } %>>Legal Firm</option>
+    <option value="Consular Agent" <% if (form_values && form_values['business-area'] === 'Consular Agent') { %> selected <% } %>>Consular Agent</option>
+    <option value="Visa Agent" <% if (form_values && form_values['business-area'] === 'Visa Agent') { %> selected <% } %>>Visa Agent</option>
+    <option value="Chambers of Commerce" <% if (form_values && form_values['business-area'] === 'Chambers of Commerce') { %> selected <% } %>>Chambers of Commerce</option>
+    <option value="Funeral Directors" <% if (form_values && form_values['business-area'] === 'Funeral Directors') { %> selected <% } %>>Funeral Directors</option>
+    <option value="Other" <% if (form_values && form_values['business-area'] === 'Other') { %> selected <% } %>>Other</option>
+  </select>
+</div>
+
+<div class="govuk-form-group <% if(error){errorsArray.forEach(function(err){if(err.fieldName==='justification'){%>error<%}})} %>">
+    <label class="form-label-bold" for="justification">Justification</label>
+    <span id="justification-form-hint" class="form-hint">Please add any additional information to support your request, such as a description of the services you offer which require legalisation, or a link to your company website</span>
+    <span class="error-message">
+        <%if (error) { %>
+            <%errorsArray.forEach(function(err){%>
+                 <% if (err.fieldName === 'justification') { %>
+                      <%= err.fieldError %>
+                 <% } %>
+            <% }) %>
+        <%}%>
+    </span>
+    <textarea class="govuk-textarea" name="justification" id="justification" rows="5" maxlength="250" aria-describedby="justification-form-hint"><% if (form_values && form_values['justification'] !== '') { %><%= form_values['justification'] %><% } %></textarea>
+</div>
+
+    <br/>
+
+    <button type="submit" class="govuk-button">Submit</button>
+
+    </form>
+</div>
+
+
+
+<%- include ('../partials/footer.ejs') %>

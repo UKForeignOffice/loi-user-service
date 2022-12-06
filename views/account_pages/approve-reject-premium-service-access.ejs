@@ -1,0 +1,33 @@
+<% pageTitle = "Approve or reject premium application - Get a document legalised – GOV.UK" %>
+
+<%- include ('../partials/header.ejs') %>
+
+<div class="column-two-thirds">
+    <% if(requestType === 'approve') { %>
+    <h1 class="heading-xlarge">Approve premium service access</h1>
+    <% } else { %>
+    <h1 class="heading-xlarge">Reject premium service access</h1>
+    <% } %>
+
+    <% if (success === false) { %>
+
+        <p>We could not find a user account associated with this request.</p>
+
+    <% } else { %>
+
+        <% if(requestType === 'approve') { %>
+
+            <p>Premium service access has been granted for <%- userEmail %>.</p>
+
+        <% } else { %>
+
+            <p>Premium service access has been rejected for <%- userEmail %>.</p>
+
+        <% } %>
+
+    <% } %>
+
+    <button type="submit" class="govuk-button" onclick="window.open('', '_self', ''); window.close();">Close window</button>
+</div>
+
+<%- include ('../partials/footer.ejs') %>
