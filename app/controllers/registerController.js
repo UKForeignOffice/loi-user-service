@@ -387,6 +387,7 @@ module.exports.completeRegistration =function(req,res){
                     first_name: req.body.first_name,
                     last_name: req.body.last_name,
                     telephone: phonePattern.test(req.body.telephone) ? req.body.telephone : '',
+                    mobileNo: (req.body.mobileNo !== '') ? mobilePattern.test(req.body.mobileNo) ? req.body.mobileNo : null : null,
                     feedback_consent: req.body.feedback_consent || '',
                     complete: true
                 }, {where: {user_id: user.id}})
@@ -396,8 +397,6 @@ module.exports.completeRegistration =function(req,res){
 
                     }).then(function () {
 
-                    if (req.body.mobileNo != '') {
-
                         var accountManagementObject = {
                             "portalCustomerUpdate": {
                                 "userId": "legalisation",
@@ -407,7 +406,7 @@ module.exports.completeRegistration =function(req,res){
                                     "forenames": req.body.first_name,
                                     "surname": req.body.last_name,
                                     "primaryTelephone": phonePattern.test(req.body.telephone) ? req.body.telephone : '',
-                                    "mobileTelephone": mobilePattern.test(req.body.mobileNo) ? req.body.mobileNo : '',
+                                    "mobileTelephone": (req.body.mobileNo !== '') ? mobilePattern.test(req.body.mobileNo) ? req.body.mobileNo : null : null,
                                     "eveningTelephone": "",
                                     "email": req.session.email,
                                     "companyName": data.company_name !== 'N/A' ? data.company_name : "",
@@ -416,31 +415,10 @@ module.exports.completeRegistration =function(req,res){
                             }
                         };
 
-                    }
-                    else {
-                        var accountManagementObject = {
-                            "portalCustomerUpdate": {
-                                "userId": "legalisation",
-                                "timestamp": (new Date()).getTime().toString(),
-                                "portalCustomer": {
-                                    "portalCustomerId": user.id,
-                                    "forenames": req.body.first_name,
-                                    "surname": req.body.last_name,
-                                    "primaryTelephone": phonePattern.test(req.body.telephone) ? req.body.telephone : '',
-                                    "mobileTelephone": null,
-                                    "eveningTelephone": "",
-                                    "email": req.session.email,
-                                    "companyName": data.company_name !== 'N/A' ? data.company_name : "",
-                                    "companyRegistrationNumber": data.company_number
-                                }
-                            }
-                        };
 
-                    }
                         // calculate HMAC string and encode in base64
                         var objectString = JSON.stringify(accountManagementObject, null, 0);
                         var hash = crypto.createHmac('sha512', config.hmacKey).update(new Buffer.from(objectString, 'utf-8')).digest('hex').toUpperCase();
-
 
                         request.post({
                             headers: {
@@ -511,6 +489,7 @@ module.exports.completeRegistration =function(req,res){
                     first_name: req.body.first_name,
                     last_name: req.body.last_name,
                     telephone: req.body.telephone,
+                    mobileNo: req.body.mobileNo,
                     feedback_consent: req.body.feedback_consent,
                     complete: true
                 })

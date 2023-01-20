@@ -143,6 +143,16 @@ var attributes = {
     },
     noOfPremiumRequestAttempts: {
         type: 'integer'
+    },
+    oneTimePasscodeExpiry: {
+        type: 'date'
+    },
+    oneTimePasscodeAttempts: {
+        type: 'integer',
+        default: 0
+    },
+    mfaPreference: {
+        type: 'string'
     }
 };
 
