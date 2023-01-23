@@ -76,18 +76,23 @@ module.exports.showChangeDetails = function(req, res) {
 
 module.exports.changeDetails = function(req, res) {
 
-    var accountDetails = {
-        first_name: req.body.first_name,
-        last_name: req.body.last_name,
-        telephone: phonePattern.test(req.body.telephone) ? req.body.telephone : '',
-        mobileNo: (req.body.mobileNo !== '') ? mobilePattern.test(req.body.mobileNo) ? req.body.mobileNo : null : null,
-        feedback_consent: req.body.feedback_consent || ''
-    };
-
     Model.User.findOne({where:{email:req.session.email}})
         .then(function (user) {
             Model.AccountDetails.findOne({where:{user_id:user.id}}).then(function(data){
                 if(data){
+
+                        var accountDetails = {
+                            first_name: req.body.first_name,
+                            last_name: req.body.last_name,
+                            telephone: phonePattern.test(req.body.telephone) ? req.body.telephone : '',
+                            mobileNo: (req.body.mobileNo !== '') ? mobilePattern.test(req.body.mobileNo) ? req.body.mobileNo : null : null,
+                            feedback_consent: req.body.feedback_consent || ''
+                        };
+
+                        if (user.mfaPreference === 'SMS') {
+                            accountDetails.mobileNo = data.mobileNo
+                        }
+
                         Model.AccountDetails.update(accountDetails,{where:{user_id:user.id}})
                             .then(function(){
                                 return res.redirect('/api/user/account');
@@ -99,10 +104,10 @@ module.exports.changeDetails = function(req, res) {
                                         "timestamp": (new Date()).getTime().toString(),
                                         "portalCustomer": {
                                             "portalCustomerId": user.id,
-                                            "forenames": req.body.first_name,
-                                            "surname": req.body.last_name,
-                                            "primaryTelephone": phonePattern.test(req.body.telephone) ? req.body.telephone : '',
-                                            "mobileTelephone": (req.body.mobileNo !== '') ? mobilePattern.test(req.body.mobileNo) ? req.body.mobileNo : null : null,
+                                            "forenames": accountDetails.first_name,
+                                            "surname": accountDetails.last_name,
+                                            "primaryTelephone": accountDetails.telephone,
+                                            "mobileTelephone": accountDetails.mobileNo,
                                             "eveningTelephone": "",
                                             "email": req.session.email,
                                             "companyName": data.company_name !== 'N/A' ? data.company_name : "",
