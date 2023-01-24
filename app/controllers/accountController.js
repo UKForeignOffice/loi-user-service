@@ -484,14 +484,11 @@ module.exports.validateSMS = async function (req, res) {
 
     } else {
 
-        let userData = await oneTimePasscodeService.getUserData(user_id)
-
-        return res.render('enter-totp', {
+        return res.render('account_pages/validate-sms-totp', {
             error: true,
             errorsArray: errorsArray,
             info: req.flash('info'),
             back_link: '/api/user/change-mfa',
-            mfaPreference: userData.mfaPreference,
             mobileNo: mobileNoFromForm
         })
     }
