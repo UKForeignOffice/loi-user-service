@@ -81,7 +81,10 @@ module.exports.changeDetails = function(req, res) {
             Model.AccountDetails.findOne({where:{user_id:user.id}}).then(function(data){
                 if(data){
 
-                        var accountDetails = {
+                    let mfaPreference = user.mfaPreference
+                    let disableMobileNumberEditing = (mfaPreference === 'SMS')
+
+                    var accountDetails = {
                             first_name: req.body.first_name,
                             last_name: req.body.last_name,
                             telephone: phonePattern.test(req.body.telephone) ? req.body.telephone : '',
@@ -172,7 +175,10 @@ module.exports.changeDetails = function(req, res) {
                                     feedback_consent: typeof (req.param('feedback_consent')) !== 'undefined' ? req.param('feedback_consent') : ""
                                 });
                                 return res.render('account_pages/change-details.ejs', {
-                                    error_report:ValidationService.validateForm({error:error,erroneousFields: erroneousFields}), form_values:req.body, url:envVariables
+                                    error_report:ValidationService.validateForm({error:error,erroneousFields: erroneousFields}),
+                                    form_values:req.body,
+                                    url:envVariables,
+                                    disableMobileNumberEditing: disableMobileNumberEditing
                                 });
                             });
 
@@ -471,16 +477,22 @@ module.exports.validateSMS = async function (req, res) {
                 error:true,
                 errorsArray: errorsArray,
                 back_link: '/api/user/change-mfa',
-                info: req.flash('info')
+                info: req.flash('info'),
+                mobileNo: mobileNoFromForm
             });
         }
 
     } else {
+
+        let userData = await oneTimePasscodeService.getUserData(user_id)
+
         return res.render('enter-totp', {
             error: true,
             errorsArray: errorsArray,
             info: req.flash('info'),
-            back_link: '/api/user/change-mfa'
+            back_link: '/api/user/change-mfa',
+            mfaPreference: userData.mfaPreference,
+            mobileNo: mobileNoFromForm
         })
     }
 
