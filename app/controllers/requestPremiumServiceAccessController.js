@@ -272,7 +272,6 @@ module.exports.approve = async function(req, res) {
 
         let token = req.params['token']
         let userAccountMatchingToken = await findAccountMatchingToken(token)
-        let userAccountDetails = await findAccountDetails(userAccountMatchingToken.id)
 
         if (userAccountMatchingToken === null || userAccountMatchingToken.length === 0) {
             return res.render('account_pages/approve-reject-premium-service-access.ejs', {
@@ -280,6 +279,7 @@ module.exports.approve = async function(req, res) {
                 success: false
             });
         } else {
+            let userAccountDetails = await findAccountDetails(userAccountMatchingToken.id)
             await grantPermissionsToUserAccount(userAccountMatchingToken)
             await emailService.premiumServiceDecision(userAccountMatchingToken, 'approve')
             await sendAccountUpdateToCASEBOOK(userAccountMatchingToken, userAccountDetails)
