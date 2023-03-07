@@ -72,7 +72,7 @@ module.exports = function(express,envVariables) {
     router.get('/sign-in', function(req, res) {
         let sessionCookie = req.cookies[sessionSettings.key];
         if (!sessionCookie) {
-            res.redirect(envVariables.applicationServiceURL + 'select-service?newSession=true')
+            return res.redirect(envVariables.applicationServiceURL + 'select-service?newSession=true')
         }
         if (req.query.expired) {
             req.flash('info', 'You have been successfully signed out.');
