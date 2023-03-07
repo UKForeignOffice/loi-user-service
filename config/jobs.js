@@ -19,7 +19,6 @@ const jobs ={
 
             if (accountsNearingExpiry.length === 0) {
                 abort('AS NO ELIGIBLE ACCOUNTS EXIST')
-                throw new Error('EXITING');
             } else {
                 await processAccountsNearingExpiry(accountsNearingExpiry)
             }
@@ -39,7 +38,7 @@ const jobs ={
         }
 
         function abort(reason) {
-            console.log('[USER CLEANUP JOB] ABORTED %s', reason);
+            console.log(`[USER CLEANUP JOB] ABORTED ${reason}`);
         }
 
         async function findAccountsNearingExpiry() {

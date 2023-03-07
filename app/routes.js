@@ -152,7 +152,8 @@ module.exports = function(express,envVariables) {
         },
         passport.authenticate('local', {
             failureRedirect: '/api/user/sign-in',
-            failureFlash: true
+            failureFlash: true,
+            keepSessionInfo: true
         }), async function(req, res) {
 
             // check to see if the user has requested too many new codes

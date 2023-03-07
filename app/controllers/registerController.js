@@ -19,6 +19,7 @@ var bcrypt = require('bcryptjs'),
     moment = require('moment')
 
     const { Op } = require("sequelize");
+const emailService = require("../services/emailService");
 
 
 var mobilePattern = /^(\+|\d|\(|\#| )(\+|\d|\(| |\-)([0-9]|\(|\)| |\-){5,14}$/;
@@ -243,128 +244,88 @@ module.exports.register = function(req, res) {
 
                 // get payment reference for this user account
                 dbConnection.query('SELECT * FROM get_next_payment_reference()')
-                    .then(function (results) {
+                    .then(async function (results) {
 
                         var paymentReference;
 
-                        if(results[0])
-                        {
+                        if (results[0]) {
                             paymentReference = results[0][0].get_next_payment_reference;
-                        }
-                        else
-                        {
+                        } else {
                             return next(new Error('failed to retrieve next available payment reference'));
                         }
 
                         //generate registration token
-                        async.waterfall([
-                            function(done) {
-                                //Create random reset token
-                                crypto.randomBytes(20, function(error, buf) {
-                                    var token = buf.toString('hex');
-                                    //Pass token on to the next function
-                                    done(error, token);
-                                });
-                            },
-                            function(token, done) {
-                                /**
-                                 * Pass in password and hashed password to test if they pass validation
-                                 * @type {{email: (*|.where.email|email|.session.user.email|attributes.email|.session.email), first_name: (*|attributes.first_name), last_name: (*|attributes.last_name), address_line1: (*|attributes.address_line1), address_line2: (*|attributes.address_line2), address_line3: (*|attributes.address_line3), town: (*|attributes.town), county: (*|attributes.county), country: (*|attributes.country), postcode: (*|attributes.postcode), telephone: (*|attributes.telephone), salt: *, password: *, confirm_password: *}}
-                                 */
-                                var expire = new Date();
-                                var expiryTime = (60*60*1000*24); //24 hours
-                                expire.setTime(expire.getTime()+expiryTime);// now +24 hours
+                        await createNewUser();
 
-                                var newUser = {
-                                    email: email,
+                        async function createNewUser() {
+                            try {
+                                // Create random reset token
+                                const token = crypto.randomBytes(20).toString('hex');
+
+                                const expire = new Date();
+                                const expiryTime = 60 * 60 * 1000 * 24; // 24 hours
+                                expire.setTime(expire.getTime() + expiryTime); // now + 24 hours
+
+                                const newUser = {
+                                    email,
                                     password: hashedPassword,
                                     confirm_password: hashedConfirmPassword,
-                                    salt:salt,
+                                    salt,
                                     failedLoginAttemptCount: 0,
-                                    accountLocked:false,
-                                    passwordExpiry: date_shift(new Date(),envVariables.password_settings.passwordExpiryInDays),
+                                    accountLocked: false,
+                                    passwordExpiry: date_shift(new Date(), envVariables.password_settings.passwordExpiryInDays),
                                     payment_reference: paymentReference,
                                     activationToken: token,
                                     activated: false,
-                                    activationTokenExpires:expire,
+                                    activationTokenExpires: expire,
                                     premiumServiceEnabled: false,
-                                    allInfoCorrect:allInfoCorrect,
-                                    accountExpiry:date_shift(new Date(),365),
-                                    warningSent:false,
-                                    expiryConfirmationSent:false
+                                    allInfoCorrect,
+                                    accountExpiry: date_shift(new Date(), 365),
+                                    warningSent: false,
+                                    expiryConfirmationSent: false,
                                 };
 
+                                const createdUser = await Model.User.create(newUser);
 
+                                const accountDetails = {
+                                    user_id: createdUser.id,
+                                    complete: false,
+                                    company_name: 'N/A',
+                                    company_number: 0,
+                                    feedback_consent: false,
+                                };
 
-                                Model.User.create(newUser)
-                                    .then(function (created) {
-                                        var accountDetails = {
-                                            user_id:created.id,
-                                            complete: false,
-                                            company_name:'N/A',
-                                            company_number:0,
-                                            feedback_consent: false
-                                        };
-                                        if(req.body.business_yes_no == 'Yes'){
-                                            accountDetails.company_name= req.body.company_name;
-                                            //  accountDetails.company_number= req.body.company_number
-                                        }
-                                        Model.AccountDetails.findOne({where:{user_id:created.id}}).then(function(data){
-                                            if(data){
-                                                Model.AccountDetails.update(accountDetails,{where:{user_id:created.id}})
-                                                    .then(function(){
-                                                        done(null, token);
-                                                    })
-                                                    .catch(function (error) {
-                                                        return res.render('register.ejs', {
-                                                            error_report: ValidationService.buildErrorsArray(error),
-                                                            email: req.session.email,
-                                                            form_values: req.body,
-                                                            error:false,
-                                                            error_description: false,
-                                                            passwordErrorType: false,
-                                                            applicationServiceURL: envVariables.applicationServiceURL,
-                                                            back_link: req.session.back_link ? envVariables.applicationServiceURL + req.session.back_link : '/api/user/usercheck',
-                                                            erroneousFields: false
-                                                        });
-                                                    });
-                                            }else{
-                                                Model.AccountDetails.create(accountDetails)
-                                                    .then(function(){
-                                                        done(null, token);
-                                                    })
-                                                    .catch(function (error) {
-                                                        return res.render('register.ejs', {
-                                                            error_report: ValidationService.buildErrorsArray(error),
-                                                            email: req.session.email,
-                                                            form_values: req.body,
-                                                            error:false,
-                                                            error_description: false,
-                                                            passwordErrorType: false,
-                                                            back_link: req.session.back_link ? envVariables.applicationServiceURL + req.session.back_link : '/api/user/usercheck',
-                                                            applicationServiceURL: envVariables.applicationServiceURL,
-                                                            erroneousFields: false
-                                                        });
-                                                    });
-                                            }
-                                        });
-                                    })
-                                    .catch(function(error){
-                                        console.log(error);
-                                    });
-                            },
-                            function(token, done){
-                                //send the email
-                                emailService.emailConfirmation(req.body.email,token);
-                                return done(null);
+                                if (req.body.business_yes_no === 'Yes') {
+                                    accountDetails.company_name = req.body.company_name;
+                                }
 
+                                const existingAccountDetails = await Model.AccountDetails.findOne({where: {user_id: createdUser.id}});
+                                if (existingAccountDetails) {
+                                    await Model.AccountDetails.update(accountDetails, {where: {user_id: createdUser.id}});
+                                } else {
+                                    await Model.AccountDetails.create(accountDetails);
+                                }
+
+                                // Send the email
+                                emailService.emailConfirmation(req.body.email, token);
+
+                                req.flash('info', "We've sent you a confirmation email. Click the link in the email to confirm your address.");
+                                return res.redirect('/api/user/emailconfirm');
+                            } catch (error) {
+                                console.log(error);
+                                return res.render('register.ejs', {
+                                    error_report: ValidationService.buildErrorsArray(error),
+                                    email: req.session.email,
+                                    form_values: req.body,
+                                    error: false,
+                                    error_description: false,
+                                    passwordErrorType: false,
+                                    applicationServiceURL: envVariables.applicationServiceURL,
+                                    back_link: req.session.back_link ? envVariables.applicationServiceURL + req.session.back_link : '/api/user/usercheck',
+                                    erroneousFields: false,
+                                });
                             }
-                        ], function() {
-                            req.flash('info', "We've sent you a confirmation email. Click the link in the email to confirm your address.");
-                            return res.redirect('/api/user/emailconfirm');
-
-                        });
-
+                        }
 
                     })
                     .catch(function (error) {
@@ -534,105 +495,82 @@ module.exports.completeRegistration =function(req,res){
 
 };
 
-module.exports.resendActivationEmail = function(req, res) {
-    //generate new registration token
-    async.waterfall([
-        function(done) {
-            //Create new random activation token
-            crypto.randomBytes(20, function(error, buf) {
-                var token = buf.toString('hex');
-                //Pass token on to the next function
-                done(error, token);
-            });
-        },
-        function(token, done) {
-            //Find User with the password token which has not expired
-            Model.User.findOne({
-                where: {
-                    email: req.body.email,
-                    activated: false
-                }
-            })
-                .then(function (user, error) {
-                    if (!user) {
-                        req.flash('info', "If an account matches " + req.body.email + " we'll send you another confirmation email.");
-                        return res.redirect('/api/user/sign-in');
-                    }
-                    //Update the user with the new token and expiry
-                    var expire = new Date();
-                    var expiryTime = (60*60*1000*24); //24 hours
-                    expire.setTime(expire.getTime()+expiryTime);// now +24 hours
+module.exports.resendActivationEmail = async function(req, res) {
+    try {
+        // Generate new random activation token
+        const token = crypto.randomBytes(20).toString('hex');
 
-                    Model.User.update({
-                        activationToken: token,
-                        activated: false,
-                        activationTokenExpires: expire
-                    }, {
-                        where: {email: req.body.email}
-                    })
-                        .then(function () {
-                            done(null, token);
-                        }).catch( function(error) {
-                        req.flash('info', "If an account matches " + req.body.email + " we'll send you another confirmation email.");
-                            return res.redirect('/api/user/sign-in');
-                        });
-                });
-        },
-        function(token, done){
-            //send the email
-            emailService.emailConfirmation(req.body.email,token);
-            return done(null);
+        // Find User with the password token which has not expired
+        const user = await Model.User.findOne({
+            where: {
+                email: req.body.email,
+                activated: false
+            }
+        });
+
+        if (!user) {
+            req.flash('info', `If an account matches ${req.body.email} we'll send you another confirmation email.`);
+            return res.redirect('/api/user/sign-in');
         }
-    ], function() {
 
-        req.flash('info', "If an account matches " + req.body.email + " we'll send you another confirmation email.");
+        // Update the user with the new token and expiry
+        const expire = new Date();
+        const expiryTime = 60 * 60 * 1000 * 24; // 24 hours
+        expire.setTime(expire.getTime() + expiryTime); // now +24 hours
+
+        await Model.User.update({
+            activationToken: token,
+            activated: false,
+            activationTokenExpires: expire
+        }, {
+            where: { email: req.body.email }
+        });
+
+        // Send the email
+        await emailService.emailConfirmation(req.body.email, token);
+
+        req.flash('info', `If an account matches ${req.body.email} we'll send you another confirmation email.`);
         return res.redirect('/api/user/sign-in');
-    });
+    } catch (error) {
+        console.log(error);
+        req.flash('info', `If an account matches ${req.body.email} we'll send you another confirmation email.`);
+        return res.redirect('/api/user/sign-in');
+    }
 };
 
-module.exports.activate = function(req, res) {
-    async.waterfall([
-        function (done) {
-            //Find User with the password token which has not expired
-
-            Model.User.findOne({
-                where: {
-                    activationToken: req.params.token,
-                    activationTokenExpires: {
-                        [Op.gt]: new Date()
-                    }
+module.exports.activate = async function(req, res) {
+    try {
+        // Find User with the password token which has not expired
+        const user = await Model.User.findOne({
+            where: {
+                activationToken: req.params.token,
+                activationTokenExpires: {
+                    [Op.gt]: new Date()
                 }
-            })
-                .then(function (user) {
-                    if (!user) {
-                        req.flash('error', 'Activation reset token is invalid.  Sign in to send a new one.');
-                        return res.redirect('/api/user/sign-in');
-                    }
-                    //Update the user with the activated flag
-                    Model.User.update({
-                        activationToken: null,
-                        activationTokenExpires: null,
-                        activated: true
-                    }, {
-                        where: {email: user.email}
-                    })
-                        .then(function () {
-                            done(null, user);
+            }
+        });
 
-                        }).catch( function(error) {
-                            done(error, null);
-                        });
-                });
-
+        if (!user) {
+            req.flash('error', 'Activation reset token is invalid. Sign in to send a new one.');
+            return res.redirect('/api/user/sign-in');
         }
-    ], function () {
+
+        // Update the user with the activated flag
+        await Model.User.update({
+            activationToken: null,
+            activationTokenExpires: null,
+            activated: true
+        }, {
+            where: { email: user.email }
+        });
+
         req.flash('info', "You've successfully confirmed your email address. Now you can sign in to your account");
         return res.redirect('/api/user/sign-in');
-    });
+    } catch (error) {
+        console.log(error);
+    }
 };
 
-function date_shift (date, days) {
-    var result = new Date(date);
-    result.setDate(result.getDate() + days);
-    return result;
+function date_shift(date, days) {
+    return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
 }
