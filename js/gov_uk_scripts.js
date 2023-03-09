@@ -51,7 +51,9 @@ function ShowHideContent() {
                     if(dataTarget === "business-info-hide") {
                         $("#business-info").hide();
                     }
-
+                    if(dataTarget === "mfa-mobile-number-hide") {
+                        $("#mfa-mobile-number").hide();
+                    }
 
                 });
 

@@ -36,7 +36,7 @@
                     <% }else{ %>
                     None provided
                     <% } %></td>
-                <td class="summary-table-cell-link"><a class="govuk-link" href="/api/user/change-details">Change<span class="visually-hidden"> mobile number</span></a></td>
+                <td class="summary-table-cell-link"><a class="govuk-link" href="<% if (user.mfaPreference === 'Email') { %>/api/user/change-details<%} else { %> /api/user/change-mfa <% } %>">Change<span class="visually-hidden"> mobile number</span></a></td>
             </tr>
             <tr>
                 <td class="summary-table-cell-label">Feedback consent</td>
@@ -52,6 +52,11 @@
                 <td class="summary-table-cell-label">Password</td>
                 <td class="summary-table-cell-content">***********</td>
                 <td class="summary-table-cell-link"> <a class="govuk-link" href="/api/user/change-password">Change<span class="visually-hidden"> password</span></a></td>
+            </tr>
+            <tr>
+                <td class="summary-table-cell-label">MFA preference</td>
+                <td class="summary-table-cell-content"><%= user.mfaPreference %></td>
+                <td class="summary-table-cell-link"> <a class="govuk-link" href="/api/user/change-mfa">Change<span class="visually-hidden"> mfa</span></a></td>
             </tr>
 
             </tbody>

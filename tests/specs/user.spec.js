@@ -10,7 +10,7 @@ describe("Healthcheck is working", function() {
 
     describe("GET /healthcheck", function() {
 
-        var url = "http://localhost:8080/api/user/healthcheck";
+        var url = "http://localhost:3001/api/user/healthcheck";
 
         it("returns status 200", function(done) {
             request(url, function(error, response, body) {

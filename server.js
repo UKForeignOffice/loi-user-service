@@ -98,16 +98,16 @@ app.use(bodyParser.urlencoded({
 
 
 //Schedule and run account expiry job every day
-var schedule = require('node-schedule');
-var jobs = require('./config/jobs.js');
+const schedule = require('node-schedule');
+const jobs = require('./config/jobs.js');
 
 // As there are 2 instances running, we need a random time, or two emails will be sent
 // for accounts nearing expiration. (Flag will be set by time of 2nd job execution to stop duplicate)
-var randomSecond = Math.floor(Math.random() * 60);
-var randomMin = Math.floor(Math.random() * 60); //Math.random returns a number from 0 to < 1 (never will return 60)
-var jobScheduleRandom = randomSecond + " " + randomMin + " " + environmentVariables.userAccountSettings.jobScheduleHour + " * * *";
-
-var ExpiryJob = schedule.scheduleJob(jobScheduleRandom, function(){jobs.accountExpiryCheck()});
+const hourlyInterval = environmentVariables.userAccountSettings.jobScheduleHour
+const randomSecond = Math.floor(Math.random() * 60);
+const randomMin = Math.floor(Math.random() * 60); //Math.random returns a number from 0 to < 1 (never will return 60)
+const jobScheduleRandom = randomSecond + " " + randomMin + " " + environmentVariables.userAccountSettings.jobScheduleHour + " * * *";
+schedule.scheduleJob(jobScheduleRandom, function(){jobs.accountExpiryCheck()});
 
 
 passportConfig(app, passport);
@@ -154,5 +154,5 @@ function moveItem(item){
 // start app
 app.listen(port);
 console.log('Server started on port ' + port);
-console.log('user account cleanup job will run at %sh %sm %ss', environmentVariables.userAccountSettings.jobScheduleHour, randomMin, randomSecond)
+console.log(`user account cleanup job will run every ${hourlyInterval} hours at ${randomMin} minutes and ${randomSecond} seconds past the hour`);
 module.exports.getApp = app;

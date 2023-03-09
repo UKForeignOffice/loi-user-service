@@ -1,0 +1,71 @@
+<% pageTitle = "Change MFA preference - Get a document legalised – GOV.UK" %>
+
+<%if(error){
+    pageTitle = "Error: Change MFA preference - Get a document legalised – GOV.UK"
+} %>
+
+<%- include ('../partials/header.ejs') %>
+<a href="/api/user/account" class="back_to_previous_button govuk-link">Back</a>
+
+<%if(error){%>
+<br>
+<div class="govuk-error-summary show" role="alert" aria-labelledby="error-summary-heading-example-2" tabindex="-1" autofocus>
+  <p class="govuk-error-summary__title" id="error-summary-title"> There is a problem </p>
+  <div id="all-errors">
+    <ul class="govuk-list govuk-error-summary__list">
+    <%errorsArray.forEach(function(err){%>
+        <li>
+            <a href="#<%= err.fieldName %>"><%= err.fieldError %> </a>
+        </li>
+    <% }) %>
+    </ul>
+  </div>
+</div>
+<%}%>
+
+<h1 class="heading-xlarge">Change MFA method</h1>
+
+<form action="/api/user/change-mfa?_csrf=<%=_csrf%>" method="post">
+
+
+         <div class="govuk-form-group">
+           <fieldset class="govuk-fieldset">
+             <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+               <h1 class="govuk-fieldset__heading">
+                 Please select your default MFA preference
+               </h1>
+             </legend>
+             <div class="govuk-radios govuk-radios--inline" data-module="govuk-radios">
+               <div class="govuk-radios__item">
+                 <input class="govuk-radios__input" id="mfa-preference-1" name="mfaPreference" type="radio" value="Email" data-target="mfa-mobile-number-hide" <% if (mfaPreference === 'Email') {%>checked<%}%>>
+                 <label class="govuk-radios__label" for="mfa-preference-1" >
+                   Email
+                 </label>
+               </div>
+               <div class="govuk-radios__item">
+                 <input class="govuk-radios__input" id="mfa-preference-2" name="mfaPreference" type="radio" value="SMS" data-target="mfa-mobile-number" <% if (mfaPreference === 'SMS') {%>checked<%}%>>
+                 <label class="govuk-radios__label" for="mfa-preference-2">
+                   SMS
+                 </label>
+               </div>
+             </div>
+             <div name="mfa-mobile-number" id="mfa-mobile-number" class="<% if (mfaPreference === 'SMS') { } else {%> js-hidden <% } %>">
+                <br/>
+                <div class="form-group">
+                    <label for="mobileNo" class="form-label-bold">Mobile number</label>
+                    <span class="form-hint">For international numbers include the country code</span>
+                    <fieldset>
+                        <input type="tel" id="mobileNo" class="govuk-input govuk-input--width-20" autocomplete="off" name="mobileNo" value="<%= mobileNo %>">
+                    </fieldset>
+                </div>
+             </div>
+           </fieldset>
+         </div>
+
+         <br/>
+
+    <button class="govuk-button" type="submit">Change MFA method</button>
+
+</form>
+
+<%- include ('../partials/footer.ejs') %>

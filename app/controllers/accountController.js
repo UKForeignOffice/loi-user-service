@@ -5,19 +5,21 @@
  *
  */
 
-
-const config = require('../../config/environment'),
+const emailService = require("../services/emailService"),
+    config = require('../../config/environment'),
     fs = require('fs'),
     Model = require('../model/models.js'),
     ValidationService = require('../services/ValidationService.js'),  common = require('../../config/common.js'),
     envVariables = common.config(),
     request = require('request'),
     crypto = require('crypto'),
-    async = require('async');
+    async = require('async'),
+    moment = require("moment"),
+    oneTimePasscodeService = require("../services/oneTimePasscodeService");
 
 var mobilePattern = /^(\+|\d|\(|\#| )(\+|\d|\(| |\-)([0-9]|\(|\)| |\-){5,14}$/;
 var phonePattern = /^(\+|\d|\(|\#| )(\+|\d|\(| |\-)([0-9]|\(|\)| |\-){5,14}$/;
-    //old pattern /([0-9]|[\-+#() ]){6,}/;
+
 
 function sendToCasebook(objectString, accountManagementObject, user) {
 
@@ -115,98 +117,80 @@ module.exports.showAddresses = function(req, res) {
 module.exports.showChangeDetails = function(req, res) {
     Model.User.findOne({where:{email:req.session.email}}).then(function(user) {
         Model.AccountDetails.findOne({where:{user_id:user.id}}).then(function(account){
-            return res.render('account_pages/change-details.ejs', {error_report:false,form_values:account, url:envVariables});
+
+            let mfaPreference = user.mfaPreference
+            let disableMobileNumberEditing = (mfaPreference === 'SMS')
+
+            return res.render('account_pages/change-details.ejs', {
+                error_report:false,
+                form_values:account,
+                url:envVariables,
+                disableMobileNumberEditing: disableMobileNumberEditing
+            });
         });
     });
 };
 
-module.exports.showChangePassword = function(req, res) {
-    return res.render('account_pages/change-password.ejs', {error:false, url:envVariables});
-};
-
 module.exports.changeDetails = function(req, res) {
-    if (req.body.mobileNo != '') {
-        var accountDetails = {
-            first_name: req.body.first_name,
-            last_name: req.body.last_name,
-            telephone: phonePattern.test(req.body.telephone) ? req.body.telephone : '',
-            mobileNo: mobilePattern.test(req.body.mobileNo) ? req.body.mobileNo : '',
-
-            feedback_consent: req.body.feedback_consent || ''
-        };
-    }
-    else{
-        var accountDetails = {
-            first_name: req.body.first_name,
-            last_name: req.body.last_name,
-            telephone: phonePattern.test(req.body.telephone) ? req.body.telephone : '',
-            mobileNo: null,
-
-            feedback_consent: req.body.feedback_consent || ''
-        };
-    }
 
     Model.User.findOne({where:{email:req.session.email}})
         .then(function (user) {
             Model.AccountDetails.findOne({where:{user_id:user.id}}).then(function(data){
+
+                let mfaPreference = user.mfaPreference
+                let disableMobileNumberEditing = (mfaPreference === 'SMS')
+
+                let accountDetails = {
+                    first_name: req.body.first_name,
+                    last_name: req.body.last_name,
+                    telephone: phonePattern.test(req.body.telephone) ? req.body.telephone : '',
+                    mobileNo: (req.body.mobileNo !== '') ? mobilePattern.test(req.body.mobileNo) ? req.body.mobileNo : null : null,
+                    feedback_consent: req.body.feedback_consent || ''
+                };
+
                 if(data){
+
+                    let companyName = (user.premiumServiceEnabled) ? data.company_name : ""
+
+                    if (user.mfaPreference === 'SMS') {
+                        accountDetails.mobileNo = data.mobileNo
+                    }
+
                     Model.AccountDetails.update(accountDetails,{where:{user_id:user.id}})
                         .then(function(){
                             return res.redirect('/api/user/account');
                         })
                         .then(function () {
 
-                            let companyName = (user.premiumServiceEnabled) ? data.company_name : ""
-
-                            if (req.body.mobileNo != '') {
-                                var accountManagementObject = {
-                                    "portalCustomerUpdate": {
-                                        "userId": "legalisation",
-                                        "timestamp": (new Date()).getTime().toString(),
-                                        "portalCustomer": {
-                                            "portalCustomerId": user.id,
-                                            "forenames": req.body.first_name,
-                                            "surname": req.body.last_name,
-                                            "primaryTelephone": phonePattern.test(req.body.telephone) ? req.body.telephone : '',
-                                            "mobileTelephone": mobilePattern.test(req.body.mobileNo) ? req.body.mobileNo : '',
-                                            "eveningTelephone": "",
-                                            "email": req.session.email,
-                                            "companyName": companyName,
-                                            "companyRegistrationNumber": ''
-                                        }
+                            var accountManagementObject = {
+                                "portalCustomerUpdate": {
+                                    "userId": "legalisation",
+                                    "timestamp": (new Date()).getTime().toString(),
+                                    "portalCustomer": {
+                                        "portalCustomerId": user.id,
+                                        "forenames": accountDetails.first_name,
+                                        "surname": accountDetails.last_name,
+                                        "primaryTelephone": accountDetails.telephone,
+                                        "mobileTelephone": accountDetails.mobileNo,
+                                        "eveningTelephone": "",
+                                        "email": req.session.email,
+                                        "companyName": companyName,
+                                        "companyRegistrationNumber": ''
                                     }
-                                };
-                            }
-                            else{
-                                var accountManagementObject = {
-                                    "portalCustomerUpdate": {
-                                        "userId": "legalisation",
-                                        "timestamp": (new Date()).getTime().toString(),
-                                        "portalCustomer": {
-                                            "portalCustomerId": user.id,
-                                            "forenames": req.body.first_name,
-                                            "surname": req.body.last_name,
-                                            "primaryTelephone": phonePattern.test(req.body.telephone) ? req.body.telephone : '',
-                                            "mobileTelephone": null,
-                                            "eveningTelephone": "",
-                                            "email": req.session.email,
-                                            "companyName": companyName,
-                                            "companyRegistrationNumber": ''
-                                        }
-                                    }
-                                };
+                                }
                             }
 
-                        // calculate HMAC string and encode in base64
-                        var objectString = JSON.stringify(accountManagementObject, null, 0);
-                        sendToCasebook(objectString, accountManagementObject, user)
-                        sendToOrbit(accountManagementObject, user)
+                            // calculate HMAC string and encode in base64
+                            var objectString = JSON.stringify(accountManagementObject, null, 0);
+                            sendToCasebook(objectString, accountManagementObject, user)
+                            sendToOrbit(accountManagementObject, user)
 
-                    })
+                        })
                         .catch(function (error) {
                             console.log(error);
                             // Custom error array builder for email match confirmation
                             var erroneousFields = [];
+
 
                             if (req.param('first_name') === '') { erroneousFields.push('first_name'); }
                             if (req.param('last_name') === '') { erroneousFields.push('last_name'); }
@@ -214,7 +198,7 @@ module.exports.changeDetails = function(req, res) {
                                 erroneousFields.push('feedback_consent');
                             }
                             if (req.param('telephone') === ''|| req.param('telephone').length<6 || req.param('telephone').length>25  ||  !phonePattern.test(req.param('telephone'))) { erroneousFields.push('telephone'); }
-                            if (req.param('mobileNo') !== "" && typeof(req.param('mobileNo')) != 'undefined') {
+                            if (req.param('mobileNo') !== '' && typeof(req.param('mobileNo')) !== 'undefined') {
                                 if (req.param('mobileNo') === '' || req.param('mobileNo').length < 6 || req.param('mobileNo').length > 25 || !mobilePattern.test(req.param('mobileNo'))) {
                                     erroneousFields.push('mobileNo');
                                 }
@@ -229,8 +213,12 @@ module.exports.changeDetails = function(req, res) {
                                 feedback_consent: typeof (req.param('feedback_consent')) !== 'undefined' ? req.param('feedback_consent') : ""
                             });
                             return res.render('account_pages/change-details.ejs', {
-                                error_report:ValidationService.validateForm({error:error,erroneousFields: erroneousFields}), form_values:req.body, url:envVariables
+                                error_report:ValidationService.validateForm({error:error,erroneousFields: erroneousFields}),
+                                form_values:req.body,
+                                url:envVariables,
+                                disableMobileNumberEditing: disableMobileNumberEditing
                             });
+
                         });
                 }else{
                     Model.AccountDetails.create(accountDetails)
@@ -243,11 +231,11 @@ module.exports.changeDetails = function(req, res) {
 
                             if (req.param('first_name') === '') { erroneousFields.push('first_name'); }
                             if (req.param('last_name') === '') { erroneousFields.push('last_name'); }
-                            if(typeof (req.param('feedback_consent'))=='undefined') {
+                            if(typeof (req.param('feedback_consent'))==='undefined') {
                                 erroneousFields.push('feedback_consent');
                             }
                             if (req.param('telephone') === ''|| req.param('telephone').length<6 || req.param('telephone').length>25) { erroneousFields.push('telephone'); }
-                            if (req.param('mobileNo') !== "" && typeof(req.param('mobileNo')) != 'undefined') {
+                            if (req.param('mobileNo') !== '' && typeof(req.param('mobileNo')) !== 'undefined') {
                                 if (req.param('mobileNo') === '' || req.param('mobileNo').length < 6 || req.param('mobileNo').length > 25) {
                                     erroneousFields.push('mobileNo');
                                 }
@@ -262,13 +250,20 @@ module.exports.changeDetails = function(req, res) {
                                 feedback_consent: typeof (req.param('feedback_consent')) !== 'undefined' ? req.param('feedback_consent') : ""
                             });
                             return res.render('account_pages/change-details.ejs', {
-                                error_report:ValidationService.validateForm({error:error,erroneousFields: erroneousFields}), form_values:req.body, url:envVariables
+                                error_report:ValidationService.validateForm({error:error,erroneousFields: erroneousFields}),
+                                form_values:req.body,
+                                url:envVariables,
+                                disableMobileNumberEditing: disableMobileNumberEditing
                             });
                         });
                 }
             });
         });
 
+};
+
+module.exports.showChangePassword = function(req, res) {
+    return res.render('account_pages/change-password.ejs', {error:false, url:envVariables});
 };
 
 module.exports.changePassword = function(req,res){
@@ -294,6 +289,253 @@ module.exports.changePassword = function(req,res){
     });
 };
 
+module.exports.showChangeMfa = function(req, res) {
+    Model.User.findOne({where:{email:req.session.email}}).then(function(user) {
+        Model.AccountDetails.findOne({where:{user_id:user.id}}).then(function(account){
+            return res.render('account_pages/change-mfa.ejs', {
+                error:false,
+                errorsArray: null,
+                url:envVariables,
+                mfaPreference: user.mfaPreference,
+                mobileNo: account.mobileNo
+            });
+        });
+    });
+};
+
+module.exports.changeMfa = async function(req, res) {
+
+    Model.User.findOne({where:{email:req.session.email}}).then(function(user) {
+        Model.AccountDetails.findOne({where:{user_id:user.id}}).then(async function(account){
+
+            let mfaPreference = req.body['mfaPreference']
+            let mobileNoFromForm = req.body['mobileNo']
+            let mobileNoFromDB = account.mobileNo
+            let mobileNoDiffers = (mobileNoFromForm !== mobileNoFromDB)
+
+            let errorsArray = [];
+
+            // Don't need to change anything if the user is trying to
+            // select the MFA method they are already using
+            if ((mfaPreference === 'Email' && user.mfaPreference === 'Email') || (mfaPreference === 'SMS' && user.mfaPreference === 'SMS' && !mobileNoDiffers)){
+                return res.redirect('/api/user/account');
+            }
+
+            if (mfaPreference === 'Email') {
+                Model.User.update({mfaPreference: mfaPreference}, {where: {email: req.session.email}}).then(function(){
+                    req.flash('info', 'Your MFA preference has been updated to Email.');
+                    return res.redirect('/api/user/account');
+                })
+            } else {
+                let validMobile = mobilePattern.test(mobileNoFromForm) ? mobileNoFromForm : false
+
+                if (validMobile !== false) {
+
+                    // one time passcodes expire 10 mins after being issued
+                    let oneTimePasscodeExists = await oneTimePasscodeService.checkIfOneTimePasscodeExists(user.id)
+
+                    if (oneTimePasscodeExists) {
+
+                        // if the one time passcode for the user is old we need to
+                        // delete it and generate a new one
+                        if (moment(Date.parse(oneTimePasscodeExists.passcode_expiry)).isBefore(Date.now())) {
+                            await oneTimePasscodeService.deleteOneTimePasscode(user.id)
+                            let one_time_passcode = await oneTimePasscodeService.generateOneTimePasscode()
+                            await oneTimePasscodeService.storeNewOneTimePasscode(user.id, one_time_passcode)
+                            await emailService.sendOneTimePasscodeSMS(one_time_passcode, validMobile, user.id)
+                        }
+
+                    } else {
+
+                        let one_time_passcode = await oneTimePasscodeService.generateOneTimePasscode()
+                        await oneTimePasscodeService.storeNewOneTimePasscode(req.user.id, one_time_passcode)
+                        await emailService.sendOneTimePasscodeSMS(one_time_passcode, validMobile, req.user.id)
+
+                    }
+
+                    return res.render('account_pages/validate-sms-totp', {
+                        error:false,
+                        errorsArray: null,
+                        back_link: '/api/user/change-mfa',
+                        info: req.flash('info'),
+                        mobileNo: validMobile
+                    });
+
+                } else {
+                    errorsArray.push({
+                        fieldName: 'mobileNo',
+                        fieldError: 'Enter a telephone number, like 01632 960 001, 07700 900 982 or +44 808 157 0192'
+                    })
+                    return res.render('account_pages/change-mfa.ejs', {
+                        error: true,
+                        errorsArray: errorsArray,
+                        url:envVariables,
+                        mfaPreference: user.mfaPreference,
+                        mobileNo: account.mobileNo
+                    });
+                }
+            }
+        })
+    })
+
+};
+
+module.exports.showValidateSMS = async function(req, res) {
+
+    let user_id = req.session.passport.user
+    let mobileNoFromForm = req.body['mobileNo']
+    let accountData = await oneTimePasscodeService.getAccountData(user_id)
+
+    if (req.query.resendPasscode === 'true') {
+
+        let one_time_passcode = await oneTimePasscodeService.generateOneTimePasscode()
+        await oneTimePasscodeService.deleteOneTimePasscode(user_id)
+        await oneTimePasscodeService.storeNewOneTimePasscode(user_id, one_time_passcode)
+        await emailService.sendOneTimePasscodeSMS(one_time_passcode, accountData.mobileNo, user_id)
+        req.flash('info', 'We have sent you another passcode via SMS.')
+        res.render('account_pages/validate-sms-totp', {
+            error: false,
+            errorsArray: null,
+            back_link: '/api/user/change-mfa',
+            info: req.flash('info'),
+            mobileNo: mobileNoFromForm
+        });
+
+    } else {
+
+        res.render('account_pages/validate-sms-totp', {
+            error: false,
+            errorsArray: null,
+            back_link: '/api/user/change-mfa',
+            info: req.flash('info'),
+            mobileNo: mobileNoFromForm
+        });
+
+    }
+
+};
+
+module.exports.validateSMS = async function (req, res) {
+
+    let passcode = req.body.passcode
+    let mobileNoFromForm = req.body['mobileNo']
+    let user_id = req.session.passport.user
+    let errorsArray = [];
+
+    async function validateFormInput(passcode) {
+
+        if (passcode.length === 0) {
+            errorsArray.push({
+                fieldName: 'passcode',
+                fieldError: 'Please enter a passcode'
+            })
+        } else if (passcode.length !== 6) {
+            errorsArray.push({
+                fieldName: 'passcode',
+                fieldError: 'Please enter a 6 digit passcode'
+            })
+        }
+
+        return errorsArray.length === 0;
+
+    }
+
+    function sendAccountUpdateToCasebook() {
+        Model.User.findOne({where:{email:req.session.email}}).then(function(user) {
+            Model.AccountDetails.findOne({where: {user_id: user.id}}).then(function (data) {
+                let accountManagementObject = {
+                    "portalCustomerUpdate": {
+                        "userId": "legalisation",
+                        "timestamp": (new Date()).getTime().toString(),
+                        "portalCustomer": {
+                            "portalCustomerId": user.id,
+                            "forenames": data.first_name,
+                            "surname": data.last_name,
+                            "primaryTelephone": data.telephone,
+                            "mobileTelephone": data.mobileNo,
+                            "eveningTelephone": "",
+                            "email": req.session.email,
+                            "companyName": data.company_name,
+                            "companyRegistrationNumber": data.company_number
+                        }
+                    }
+                };
+
+
+
+                // calculate HMAC string and encode in base64
+                var objectString = JSON.stringify(accountManagementObject, null, 0);
+                var hash = crypto.createHmac('sha512', config.hmacKey).update(new Buffer.from(objectString, 'utf-8')).digest('hex').toUpperCase();
+
+                request.post({
+                    headers: {
+                        "accept": "application/json",
+                        "hash": hash,
+                        "content-type": "application/json; charset=utf-8",
+                        "api-version": "3"
+                    },
+                    url: config.accountManagementApiUrl,
+                    agentOptions: config.certPath ? {
+                        cert: config.certPath,
+                        key: config.keyPath
+                    } : null,
+                    json: true,
+                    body: accountManagementObject
+                }, function (error, response, body) {
+                    if (error) {
+                        console.log(JSON.stringify(error));
+                    } else if (response.statusCode === 200) {
+                        console.log('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE SENT TO CASEBOOK SUCCESSFULLY FOR USER_ID ' + user.id);
+                    } else {
+                        console.error('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE FAILED SENDING TO CASEBOOK FOR USER_ID ' + user.id);
+                        console.error('response code: ' + response.code);
+                        console.error(body);
+                    }
+                });
+            });
+        });
+    }
+
+    let noErrorsPresent = await validateFormInput(passcode)
+
+    if (noErrorsPresent) {
+
+        let verificationIsSuccessful = await oneTimePasscodeService.verifyUser(user_id, passcode)
+        if (verificationIsSuccessful) {
+            await oneTimePasscodeService.deleteOneTimePasscode(user_id)
+            await oneTimePasscodeService.updateMfaPreferenceToSMS(user_id)
+            await oneTimePasscodeService.updateAccountMobileNumber(user_id, mobileNoFromForm)
+            sendAccountUpdateToCasebook()
+            req.flash('info', 'Your MFA preference has been updated to SMS.');
+            res.redirect('/api/user/account')
+        } else {
+            errorsArray.push({
+                fieldName: 'passcode',
+                fieldError: 'The passcode you entered was incorrect'
+            })
+
+            return res.render('account_pages/validate-sms-totp', {
+                error:true,
+                errorsArray: errorsArray,
+                back_link: '/api/user/change-mfa',
+                info: req.flash('info'),
+                mobileNo: mobileNoFromForm
+            });
+        }
+
+    } else {
+
+        return res.render('account_pages/validate-sms-totp', {
+            error: true,
+            errorsArray: errorsArray,
+            info: req.flash('info'),
+            back_link: '/api/user/change-mfa',
+            mobileNo: mobileNoFromForm
+        })
+    }
+
+};
+
 module.exports.showChangeCompanyDetails = function(req, res) {
     Model.User.findOne({where:{email:req.session.email}}).then(function(user) {
         Model.AccountDetails.findOne({where:{user_id:user.id}}).then(function(account){
@@ -303,7 +545,7 @@ module.exports.showChangeCompanyDetails = function(req, res) {
 };
 
 module.exports.changeCompanyDetails = function(req, res) {
-    var accountDetails ={
+    var accountDetails = {
         company_name: req.body.company_name
     };
 
@@ -313,50 +555,30 @@ module.exports.changeCompanyDetails = function(req, res) {
                 if(data){
                     Model.AccountDetails.update(accountDetails,{where:{user_id:user.id}})
                         .then(function(){
-                            if (req.body.mobileNo != '') {
-                                var accountManagementObject = {
-                                    "portalCustomerUpdate": {
-                                        "userId": "legalisation",
-                                        "timestamp": (new Date()).getTime().toString(),
-                                        "portalCustomer": {
-                                            "portalCustomerId": user.id,
-                                            "forenames": data.first_name,
-                                            "surname": data.last_name,
-                                            "primaryTelephone": data.telephone,
-                                            "mobileTelephone": data.mobileNo,
-                                            "eveningTelephone": "",
-                                            "email": req.session.email,
-                                            "companyName": req.body.company_name,
-                                            "companyRegistrationNumber": ''
-                                        }
+
+                            var accountManagementObject = {
+                                "portalCustomerUpdate": {
+                                    "userId": "legalisation",
+                                    "timestamp": (new Date()).getTime().toString(),
+                                    "portalCustomer": {
+                                        "portalCustomerId": user.id,
+                                        "forenames": data.first_name,
+                                        "surname": data.last_name,
+                                        "primaryTelephone": data.telephone,
+                                        "mobileTelephone": data.mobileNo,
+                                        "eveningTelephone": "",
+                                        "email": req.session.email,
+                                        "companyName": req.body.company_name,
+                                        "companyRegistrationNumber": data.company_number
                                     }
-                                };
-                            }
-                            else{
-                                var accountManagementObject = {
-                                    "portalCustomerUpdate": {
-                                        "userId": "legalisation",
-                                        "timestamp": (new Date()).getTime().toString(),
-                                        "portalCustomer": {
-                                            "portalCustomerId": user.id,
-                                            "forenames": data.first_name,
-                                            "surname": data.last_name,
-                                            "primaryTelephone": data.telephone,
-                                            "mobileTelephone": "",
-                                            "eveningTelephone": "",
-                                            "email": req.session.email,
-                                            "companyName": req.body.company_name,
-                                            "companyRegistrationNumber": ''
-                                        }
-                                    }
-                                };
-                            }
+                                }
+                            };
 
                             var objectString = JSON.stringify(accountManagementObject, null, 0);
 
-
                             sendToCasebook(objectString, accountManagementObject, user)
                             sendToOrbit(accountManagementObject, user)
+
                             return res.redirect('/api/user/account');
                         })
                         .catch(function (error) {
@@ -365,10 +587,9 @@ module.exports.changeCompanyDetails = function(req, res) {
 
                             if (req.param('company_name') === '') { erroneousFields.push('company_name'); }
 
-
                             dataValues = [];
                             dataValues.push({
-                                company_name: req.param('company_name') !== '' ? req.param('company_name') : ""
+                                company_name: req.param('company_name') !== '' ? req.param('company_name') : ''
                             });
                             return res.render('account_pages/change-company-details.ejs', {
                                 error_report:ValidationService.validateForm({error:error,erroneousFields: erroneousFields}), form_values:req.body, url:envVariables
@@ -401,6 +622,6 @@ module.exports.changeCompanyDetails = function(req, res) {
 
 module.exports.changeEmail = function(req, res) {
     Model.User.findOne({where:{email:req.session.email}}).then(function(user) {
-            return res.render('account_pages/change-email.ejs', {url:envVariables});
-        });
+        return res.render('account_pages/change-email.ejs', {url:envVariables});
+    });
 };
