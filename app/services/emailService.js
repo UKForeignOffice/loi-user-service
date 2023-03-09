@@ -7,17 +7,45 @@ var request = require('request'),
 
 
 emailService = {
+    sendOneTimePasscodeEmail: function(oneTimePasscode, email, userId){
+
+        var url = '/one_time_passcode_email';
+        var postData= {to: email, oneTimePasscode: oneTimePasscode};
+
+        request(setOptions(postData, url), function (err, res) {
+            if(err) {
+                console.log(err);
+            } else {
+                console.log(`${res.statusCode} - One time passcode email sent for user ${userId}`);
+            }
+        });
+
+    },
+    sendOneTimePasscodeSMS: function(oneTimePasscode, phoneNumber, userId){
+
+        var url = '/one_time_passcode_sms';
+        var postData= {to: phoneNumber, oneTimePasscode: oneTimePasscode};
+
+        request(setOptions(postData, url), function (err, res) {
+            if(err) {
+                console.log(err);
+            } else {
+                console.log(`${res.statusCode} - One time passcode sms sent for user ${userId}`);
+            }
+        });
+
+    },
     lockedOut: function(name,email){
 
         var url = '/account_locked';
         var postData= {to: email, name: name};
 
         // send request to notification service
-        request(setOptions(postData, url), function (err, res, body) {
+        request(setOptions(postData, url), function (err, res) {
             if(err) {
                 console.log(err);
             } else {
-                console.log(res.statusCode, body);
+                console.log(`${res.statusCode} - lockedOut email sent`);
             }
         });
     },
@@ -27,11 +55,11 @@ emailService = {
         var postData= {to: email, token: token};
 
         // send request to notification service
-        request(setOptions(postData, url), function (err, res, body) {
+        request(setOptions(postData, url), function (err, res) {
             if(err) {
                 console.log(err);
             } else {
-                console.log(res.statusCode, body);
+                console.log(`${res.statusCode} - reset password email sent`);
             }
         });
     },
@@ -41,11 +69,11 @@ emailService = {
         var postData= {to: email, name: name};
 
         // send request to notification service
-        request(setOptions(postData, url), function (err, res, body) {
+        request(setOptions(postData, url), function (err, res) {
             if(err) {
                 console.log(err);
             } else {
-                console.log(res.statusCode, body);
+                console.log(`${res.statusCode} - confirm password email sent`);
             }
         });
     },
@@ -55,11 +83,11 @@ emailService = {
         var postData= {to: email, token: token};
 
         // send request to notification service
-        request(setOptions(postData, url), function (err, res, body) {
+        request(setOptions(postData, url), function (err, res) {
             if(err) {
                 console.log(err);
             } else {
-                console.log(res.statusCode, body);
+                console.log(`${res.statusCode} - activation email sent`);
             }
         });
     },

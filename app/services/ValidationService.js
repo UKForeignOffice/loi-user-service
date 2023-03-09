@@ -118,13 +118,13 @@ var ValidationService = {
             //old phone pattern /([0-9]|[\-+#() ]){6,}/;
         var isemail = require('isemail');
         var Postcode = require("postcode");
-        var postcodeObject = new Postcode(req.body.postcode.replace(/ /g,''));
+        var postcodeObject = Postcode.toNormalised(req.body.postcode);
         var postcode = ' ';
         if(country!='United Kingdom' ){
             postcode =  req.body.postcode.trim().length===0 ? ' ' : req.body.postcode.length > 1 ? req.body.postcode : postcode;
         }
         else{
-            postcode =  postcodeObject.valid() ? postcodeObject.normalise() :'';
+            postcode =  (postcodeObject) ? postcodeObject : ''
         }
         erroneousFields = [];
         if (req.body.full_name === '' || req.body.full_name.length <2) {
@@ -160,7 +160,6 @@ var ValidationService = {
             }
         }
 
-console.log(req.body.postcode === '' || req.body.postcode.length >20);
         var dataValues = [];
         dataValues.push(
             {

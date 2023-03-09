@@ -88,7 +88,7 @@
                     <% } %>
                     <% }) %>
                     <% } %>
-                <input type="tel" id="mobileNo" class="govuk-input govuk-!-width-one-half" autocomplete="off" name="mobileNo"  value="<% if(form_values && form_values.mobileNo!=null){%><%=form_values.mobileNo%><%} %>">
+                <input type="tel" id="mobileNo" class="govuk-input govuk-!-width-one-half" autocomplete="off" name="mobileNo"  value="<% if(form_values && form_values.mobileNo!=null){%><%=form_values.mobileNo%><%} %>" <% if (disableMobileNumberEditing) {%>disabled<%}%>>
             </fieldset>
         </div>
 
@@ -114,7 +114,6 @@
             <%var feedback_consent = form_values.feedback_consent;%>
 
                 <span class="visually-hidden">Can we contact you for feedback to help improve this service?</span>
-                <%console.log(feedback_consent);%>
                 <div class="govuk-radios__item">
                 <input class="govuk-radios__input" id="radio-feedback-yes" type="radio"  name="feedback_consent" value=true <%if(typeof(feedback_consent)!='undefined' && feedback_consent && feedback_consent!= null){%>checked <%}%>>
                 <label class="govuk-radios__label <%if(typeof(feedback_consent)!='undefined' && feedback_consent && feedback_consent!= null){%>selected <%}%>" for="radio-feedback-yes" >
