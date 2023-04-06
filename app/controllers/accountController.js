@@ -15,7 +15,8 @@ const emailService = require("../services/emailService"),
     crypto = require('crypto'),
     async = require('async'),
     moment = require("moment"),
-    oneTimePasscodeService = require("../services/oneTimePasscodeService");
+    oneTimePasscodeService = require("../services/oneTimePasscodeService"),
+    HelperService = require("../services/HelperService");
 
 var mobilePattern = /^(\+|\d|\(|\#| )(\+|\d|\(| |\-)([0-9]|\(|\)| |\-){5,14}$/;
 var phonePattern = /^(\+|\d|\(|\#| )(\+|\d|\(| |\-)([0-9]|\(|\)| |\-){5,14}$/;
@@ -53,9 +54,9 @@ function sendToCasebook(objectString, accountManagementObject, user) {
 
 }
 
-function sendToOrbit(accountManagementObject, user) {
+async function sendToOrbit(accountManagementObject, user) {
     var edmsManagePortalCustomerUrl = config.edmsHost + '/api/v1/managePortalCustomer'
-    var edmsBearerToken = config.edmsBearerToken
+    var edmsBearerToken = await HelperService.getEdmsAccessToken()
 
     request.post({
         headers: {
