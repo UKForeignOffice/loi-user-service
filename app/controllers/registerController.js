@@ -18,7 +18,8 @@ const bcrypt = require('bcryptjs'),
     dbConnection = require('../sequelize.js'),
     moment = require('moment'),
     { Op } = require("sequelize"),
-    emailService = require("../services/emailService");
+    emailService = require("../services/emailService"),
+    HelperService = require("../services/HelperService");
 
 
 
@@ -58,9 +59,9 @@ function sendToCasebook(objectString, accountManagementObject, user) {
 
 }
 
-function sendToOrbit(accountManagementObject, user) {
+async function sendToOrbit(accountManagementObject, user) {
     var edmsManagePortalCustomerUrl = config.edmsHost + '/api/v1/managePortalCustomer'
-    var edmsBearerToken = config.edmsBearerToken
+    var edmsBearerToken = await HelperService.getEdmsAccessToken()
 
     request.post({
         headers: {

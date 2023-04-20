@@ -19,6 +19,8 @@ var Sequelize = require('sequelize');
 var accountManagementApiUrl = process.env.ACCOUNTMANAGEMENTAPIURL;
 var edmsHost = process.env.EDMS_HOST;
 var edmsBearerToken = JSON.parse(process.env.EDMS_BEARER_TOKEN);
+var edmsAuthHost = process.env.EDMS_AUTH_HOST;
+var edmsAuthScope = process.env.EDMS_AUTH_SCOPE;
 var certPath = process.env.NODE_ENV !== 'development' ? process.env.CASEBOOKCERTIFICATE : process.env.CASEBOOKCERTIFICATE.replace(/\\n/gm, '\n');
 var keyPath = process.env.NODE_ENV !== 'development' ? process.env.CASEBOOKKEY : process.env.CASEBOOKKEY.replace(/\\n/gm, '\n');
 var hmacKey = process.env.HMACKEY;
@@ -38,7 +40,9 @@ var config = {
     "live_variables":live_variables,
     "accountManagementApiUrl":accountManagementApiUrl,
     "edmsHost":edmsHost,
-    "edmsBearerToken":edmsBearerToken['EDMS-Web-Submissions-Token'],
+    edmsBearerToken,
+    edmsAuthHost,
+    edmsAuthScope,
     "certPath":certPath,
     "keyPath":keyPath,
     "hmacKey":hmacKey
