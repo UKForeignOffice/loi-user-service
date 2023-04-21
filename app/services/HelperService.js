@@ -27,7 +27,7 @@ const HelperService = {
                     'Authorization': `Basic ${token}`,
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                data: `grant_type=client_credentials&scope=${envVariables.edmsAuthScope}/api_stage`
+                data: `grant_type=client_credentials&scope=${envVariables.edmsAuthScope}`
             });
 
             const { access_token } = response.data;
