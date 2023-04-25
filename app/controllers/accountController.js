@@ -15,7 +15,8 @@ const emailService = require("../services/emailService"),
     crypto = require('crypto'),
     async = require('async'),
     moment = require("moment"),
-    oneTimePasscodeService = require("../services/oneTimePasscodeService");
+    oneTimePasscodeService = require("../services/oneTimePasscodeService"),
+    HelperService = require("../services/HelperService");
 
 var mobilePattern = /^(\+|\d|\(|\#| )(\+|\d|\(| |\-)([0-9]|\(|\)| |\-){5,14}$/;
 var phonePattern = /^(\+|\d|\(|\#| )(\+|\d|\(| |\-)([0-9]|\(|\)| |\-){5,14}$/;
@@ -53,29 +54,33 @@ function sendToCasebook(objectString, accountManagementObject, user) {
 
 }
 
-function sendToOrbit(accountManagementObject, user) {
-    var edmsManagePortalCustomerUrl = config.edmsHost + '/api/v1/managePortalCustomer'
-    var edmsBearerToken = config.edmsBearerToken
+async function sendToOrbit(accountManagementObject, user) {
+    try {
+        var edmsManagePortalCustomerUrl = config.edmsHost + '/api/v1/managePortalCustomer'
+        var edmsBearerToken = await HelperService.getEdmsAccessToken()
 
-    request.post({
-        headers: {
-            'content-type': 'application/json',
-            'Authorization': `Bearer ${edmsBearerToken}`
-        },
-        url: edmsManagePortalCustomerUrl,
-        json: true,
-        body: accountManagementObject
-    }, function (error, response, body) {
-        if (error) {
-            console.log(JSON.stringify(error));
-        } else if (response.statusCode === 200) {
-            console.log('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE SENT TO ORBIT SUCCESSFULLY FOR USER_ID ' + user.id);
-        } else {
-            console.error('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE FAILED SENDING TO ORBIT FOR USER_ID ' + user.id);
-            console.error('response code: ' + response.code);
-            console.error(body);
-        }
-    })
+        request.post({
+            headers: {
+                'content-type': 'application/json',
+                'Authorization': `Bearer ${edmsBearerToken}`
+            },
+            url: edmsManagePortalCustomerUrl,
+            json: true,
+            body: accountManagementObject
+        }, function (error, response, body) {
+            if (error) {
+                console.log(JSON.stringify(error));
+            } else if (response.statusCode === 200) {
+                console.log('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE SENT TO ORBIT SUCCESSFULLY FOR USER_ID ' + user.id);
+            } else {
+                console.error('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE FAILED SENDING TO ORBIT FOR USER_ID ' + user.id);
+                console.error('response code: ' + response.code);
+                console.error(body);
+            }
+        })
+    } catch (error) {
+        console.error(`sendToOrbit: ${error}`)
+    }
 }
 
 module.exports.showAccount = function(req, res) {

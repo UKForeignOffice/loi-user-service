@@ -18,7 +18,8 @@ const bcrypt = require('bcryptjs'),
     dbConnection = require('../sequelize.js'),
     moment = require('moment'),
     { Op } = require("sequelize"),
-    emailService = require("../services/emailService");
+    emailService = require("../services/emailService"),
+    HelperService = require("../services/HelperService");
 
 
 
@@ -58,29 +59,35 @@ function sendToCasebook(objectString, accountManagementObject, user) {
 
 }
 
-function sendToOrbit(accountManagementObject, user) {
-    var edmsManagePortalCustomerUrl = config.edmsHost + '/api/v1/managePortalCustomer'
-    var edmsBearerToken = config.edmsBearerToken
+async function sendToOrbit(accountManagementObject, user) {
+    try {
 
-    request.post({
-        headers: {
-            'content-type': 'application/json',
-            'Authorization': `Bearer ${edmsBearerToken}`
-        },
-        url: edmsManagePortalCustomerUrl,
-        json: true,
-        body: accountManagementObject
-    }, function (error, response, body) {
-        if (error) {
-            console.log(JSON.stringify(error));
-        } else if (response.statusCode === 200) {
-            console.log('[ACCOUNT MANAGEMENT] ACCOUNT CREATION SENT TO ORBIT SUCCESSFULLY FOR USER_ID ' + user.id);
-        } else {
-            console.error('[ACCOUNT MANAGEMENT] ACCOUNT CREATION FAILED SENDING TO ORBIT FOR USER_ID ' + user.id);
-            console.error('response code: ' + response.code);
-            console.error(body);
-        }
-    })
+        var edmsManagePortalCustomerUrl = config.edmsHost + '/api/v1/managePortalCustomer'
+        var edmsBearerToken = await HelperService.getEdmsAccessToken()
+
+        request.post({
+            headers: {
+                'content-type': 'application/json',
+                'Authorization': `Bearer ${edmsBearerToken}`
+            },
+            url: edmsManagePortalCustomerUrl,
+            json: true,
+            body: accountManagementObject
+        }, function (error, response, body) {
+            if (error) {
+                console.log(JSON.stringify(error));
+            } else if (response.statusCode === 200) {
+                console.log('[ACCOUNT MANAGEMENT] ACCOUNT CREATION SENT TO ORBIT SUCCESSFULLY FOR USER_ID ' + user.id);
+            } else {
+                console.error('[ACCOUNT MANAGEMENT] ACCOUNT CREATION FAILED SENDING TO ORBIT FOR USER_ID ' + user.id);
+                console.error('response code: ' + response.code);
+                console.error(body);
+            }
+        })
+
+    } catch (error) {
+        console.error(`sendToOrbit: ${error}`)
+    }
 }
 
 module.exports.usercheck = function(req, res) {

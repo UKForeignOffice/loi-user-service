@@ -5,6 +5,7 @@ const emailService = require("../services/emailService");
 const envVariables = common.config();
 const request = require('request');
 const config = require("../../config/environment");
+const HelperService = require("../services/HelperService");
 
 module.exports.showRequestPremiumServiceAccess = async function(req, res) {
 
@@ -394,7 +395,7 @@ module.exports.approve = async function(req, res) {
             try {
 
                 var edmsManagePortalCustomerUrl = config.edmsHost + '/api/v1/managePortalCustomer'
-                var edmsBearerToken = config.edmsBearerToken
+                var edmsBearerToken = await HelperService.getEdmsAccessToken()
 
                 let accountManagementObject = {
                     "portalCustomerUpdate": {
@@ -553,7 +554,7 @@ module.exports.reject = async function(req, res) {
             try {
 
                 var edmsManagePortalCustomerUrl = config.edmsHost + '/api/v1/managePortalCustomer'
-                var edmsBearerToken = config.edmsBearerToken
+                var edmsBearerToken = await HelperService.getEdmsAccessToken()
 
                 let accountManagementObject = {
                     "portalCustomerUpdate": {
