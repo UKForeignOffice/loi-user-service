@@ -21,8 +21,8 @@ var edmsHost = process.env.EDMS_HOST;
 var edmsBearerToken = JSON.parse(process.env.EDMS_BEARER_TOKEN);
 var edmsAuthHost = process.env.EDMS_AUTH_HOST;
 var edmsAuthScope = process.env.EDMS_AUTH_SCOPE;
-var certPath = process.env.NODE_ENV !== 'development' ? process.env.CASEBOOKCERTIFICATE : process.env.CASEBOOKCERTIFICATE.replace(/\\n/gm, '\n');
-var keyPath = process.env.NODE_ENV !== 'development' ? process.env.CASEBOOKKEY : process.env.CASEBOOKKEY.replace(/\\n/gm, '\n');
+var certPath = process.env.NODE_ENV === 'development' ? process.env.CASEBOOKCERTIFICATE.replace(/\\n/gm, '\n') : process.env.CASEBOOKCERTIFICATE;
+var keyPath = process.env.NODE_ENV === 'development' ? process.env.CASEBOOKKEY.replace(/\\n/gm, '\n') : process.env.CASEBOOKKEY;
 var hmacKey = process.env.HMACKEY;
 
 var config = {
