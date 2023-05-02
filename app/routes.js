@@ -236,7 +236,7 @@ module.exports = function(express,envVariables) {
                 await oneTimePasscodeService.storeNewOneTimePasscode(user_id, one_time_passcode)
                 if (userData.mfaPreference === 'Email') {
                     if (req.query.changeMethod === 'true') {
-                        await emailService.sendOneTimePasscodeSMS(one_time_passcode, mobileNumberLookup.dataValues.mobileNo, user_id)
+                        await emailService.sendOneTimePasscodeSMS(one_time_passcode, mobileNumberLookup?.dataValues?.mobileNo, user_id)
                     } else {
                         await emailService.sendOneTimePasscodeEmail(one_time_passcode, userData.email, user_id)
                     }
@@ -244,7 +244,7 @@ module.exports = function(express,envVariables) {
                     if (req.query.changeMethod === 'true') {
                         await emailService.sendOneTimePasscodeEmail(one_time_passcode, userData.email, user_id)
                     } else {
-                        await emailService.sendOneTimePasscodeSMS(one_time_passcode, mobileNumberLookup.dataValues.mobileNo, user_id)
+                        await emailService.sendOneTimePasscodeSMS(one_time_passcode, mobileNumberLookup?.dataValues?.mobileNo, user_id)
                     }
                 }
                 req.flash('info', 'We have sent you another passcode.')
@@ -254,7 +254,7 @@ module.exports = function(express,envVariables) {
                     info: req.flash('info'),
                     back_link: '/api/user/sign-in',
                     mfaPreference: userData.mfaPreference,
-                    mobileNo: accountData.mobileNo
+                    mobileNo: accountData?.mobileNo
                 })
 
             } else {
@@ -272,7 +272,7 @@ module.exports = function(express,envVariables) {
                 mfaPreference: userData.mfaPreference,
                 info: req.flash('info'),
                 back_link: '/api/user/sign-in',
-                mobileNo: accountData.mobileNo
+                mobileNo: accountData?.mobileNo
             })
 
         }
