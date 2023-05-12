@@ -5,18 +5,17 @@
  *
  */
 
-const emailService = require("../services/emailService"),
-    config = require('../../config/environment'),
-    fs = require('fs'),
-    Model = require('../model/models.js'),
-    ValidationService = require('../services/ValidationService.js'),  common = require('../../config/common.js'),
-    envVariables = common.config(),
-    request = require('request'),
-    crypto = require('crypto'),
-    async = require('async'),
-    moment = require("moment"),
-    oneTimePasscodeService = require("../services/oneTimePasscodeService"),
-    HelperService = require("../services/HelperService");
+const emailService = require("../services/emailService");
+const config = require('../../config/environment');
+const fs = require('fs');
+const Model = require('../model/models.js');
+const ValidationService = require('../services/ValidationService.js'),  common = require('../../config/common.js');
+const envVariables = common.config();
+const request = require('request');
+const crypto = require('crypto');
+const moment = require("moment");
+const oneTimePasscodeService = require("../services/oneTimePasscodeService");
+const HelperService = require("../services/HelperService");
 
 var mobilePattern = /^(\+|\d|\(|\#| )(\+|\d|\(| |\-)([0-9]|\(|\)| |\-){5,14}$/;
 var phonePattern = /^(\+|\d|\(|\#| )(\+|\d|\(| |\-)([0-9]|\(|\)| |\-){5,14}$/;
