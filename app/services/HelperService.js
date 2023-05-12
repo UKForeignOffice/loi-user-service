@@ -36,7 +36,6 @@ const HelperService = {
             return access_token;
         } catch (error) {
             console.error('Error fetching access token from EDMS:', error);
-            throw error;
         }
     },
 
