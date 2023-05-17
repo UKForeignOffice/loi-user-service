@@ -1,5 +1,3 @@
-// application
-
 const express = require('express'),
     app = express(),
     common = require('./config/common.js'),
@@ -15,8 +13,8 @@ const express = require('express'),
 
 require('./config/logs');
 require('dotenv').config();
+const serverPort = (process.argv[2] && !isNaN(process.argv[2])  ? process.argv[2] : (process.env.PORT || 3001));
 
-const sessionSettings = JSON.parse(process.env.THESESSION);
 
 app.use(cookieParser());
 app.use(csrf({cookie: true}));
@@ -27,6 +25,13 @@ app.use(function(req, res, next) {
     return next();
 });
 
+
+
+// =====================================
+// SESSION
+// =====================================
+const sessionSettings = JSON.parse(process.env.THESESSION);
+
 app.use(function(req, res, next) {
     if (req.cookies['LoggedIn']){
         res.cookie('LoggedIn',true,{ maxAge: sessionSettings.cookieMaxAge, httpOnly: true });
@@ -34,27 +39,40 @@ app.use(function(req, res, next) {
     return next();
 });
 
-const port = (process.argv[2] && !isNaN(process.argv[2])  ? process.argv[2] : (process.env.PORT || 3001));
-
 const session = require("express-session")
-let RedisStore = require("connect-redis")(session)
+const RedisStore = require("connect-redis")(session);
+const { createClient } = require("redis");
+const { password, port, host } = sessionSettings;
+const connectTimeout = 15000;
 
-const { createClient } = require("redis")
-let redisClient = createClient({
+const redisClient = createClient({
     legacyMode: true,
-    password: sessionSettings.password,
-    socket: {
-        port: sessionSettings.port,
-        host: sessionSettings.host,
-        tls: process.env.NODE_ENV !== 'development'
-    }
-})
+    password,
+    socket: { connectTimeout, port, host, tls: process.env.NODE_ENV !== "development" },
+});
 
-redisClient.connect().catch(console.error)
+redisClient.connect((err) => {
+    if (err) {
+        console.error("Redis client error:", err);
+        next(err);
+    } else {
+        next();
+    }
+});
+
+redisClient.on("connect", () => {
+    console.log("Redis client connected successfully");
+});
+
+redisClient.on("error", (error) => {
+    console.error("Redis client error:", error);
+});
+
+const redisStore = new RedisStore({ client: redisClient });
 
 app.use(
     session({
-        store: new RedisStore({ client: redisClient }),
+        store: redisStore,
         prefix: sessionSettings.prefix,
         saveUninitialized: false,
         secret: sessionSettings.secret,
@@ -64,11 +82,16 @@ app.use(
         cookie: {
             domain: sessionSettings.domain,
             maxAge: sessionSettings.maxAge,
-            secure: 'auto'
-        }
+            secure: "auto",
+        },
     })
-)
+);
 
+
+
+// =====================================
+// VIEW AND LOCALS
+// =====================================
 app.set('view engine', 'ejs');
 
 app.use(function (req, res, next) {
@@ -83,6 +106,10 @@ app.use(function (req, res, next) {
     next();
 });
 
+
+// =====================================
+// PASSPORT CONFIG
+// =====================================
 app.use(flash()); //use connect-flash for flash messages stored in session
 app.use(passport.initialize());
 app.use(passport.session()); //persistent login sessions
@@ -94,10 +121,9 @@ app.use(bodyParser.urlencoded({
 }));
 
 
-
-
-
-//Schedule and run account expiry job every day
+// =====================================
+// JOB SCHEDULER
+// =====================================
 const schedule = require('node-schedule');
 const jobs = require('./config/jobs.js');
 
@@ -112,19 +138,17 @@ schedule.scheduleJob(jobScheduleRandom, function(){jobs.accountExpiryCheck()});
 
 passportConfig(app, passport);
 app.use('/api/user', appRouter);
-
-
-
-
-
-
 //Automatically update passport strategy
 var fs = require('fs-extra');
 fs.copy(__dirname+'/data/strategy.js', __dirname+'/node_modules/passport-local/lib/strategy.js', function (err) {});
 
 
-app.use("/api/user/",express.static(__dirname + "/public"));
 
+
+// =====================================
+// GOV STYLES
+// =====================================
+app.use("/api/user/",express.static(__dirname + "/public"));
 app.use("/api/user/styles",express.static(__dirname + "/styles"));
 app.use("/api/user/fonts",express.static(__dirname + "/fonts"));
 app.use("/api/user/images",express.static(__dirname + "/images"));
@@ -151,8 +175,11 @@ function moveItem(item){
     });
 }
 
-// start app
-app.listen(port);
-console.log('Server started on port ' + port);
+
+// =====================================
+// START APP
+// =====================================
+app.listen(serverPort);
+console.log('Server started on port ' + serverPort);
 console.log(`user account cleanup job will run every ${hourlyInterval} hours at ${randomMin} minutes and ${randomSecond} seconds past the hour`);
 module.exports.getApp = app;
