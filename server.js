@@ -179,6 +179,19 @@ function moveItem(item){
 // =====================================
 // START APP
 // =====================================
+process.on('uncaughtException', (error, origin) => {
+    console.error('----- Uncaught Exception -----')
+    console.error(error)
+    console.error('----- Exception Origin -----')
+    console.error(origin)
+})
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('----- Unhandled Rejection -----')
+    console.error(`Promise: ${promise}`)
+    console.error(`Reason: ${reason}`)
+})
+
 app.listen(serverPort);
 console.log('Server started on port ' + serverPort);
 console.log(`user account cleanup job will run every ${hourlyInterval} hours at ${randomMin} minutes and ${randomSecond} seconds past the hour`);
