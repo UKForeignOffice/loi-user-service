@@ -106,6 +106,9 @@ module.exports = function(express,envVariables) {
             else if (req.query.from == 'start') {
                 back_link = envVariables.applicationServiceURL + 'start';
             }
+            else if (req.query.from == 'docChecker'){
+                back_link = envVariables.applicationServiceURL + 'choose-documents-or-skip';
+            }
             else {
                 back_link = envVariables.applicationServiceURL + 'start';
             }
@@ -113,6 +116,10 @@ module.exports = function(express,envVariables) {
 
         if (req.query.next && req.query.next === 'continueEApp') {
             req.session.continueEAppFlow = true;
+        }
+
+        if (req.query.next && req.query.next === 'continueDocChecker') {
+                    req.session.continueDocChecker = true;
         }
 
         return res.render('sign-in.ejs', {
