@@ -391,54 +391,65 @@ module.exports.approve = async function(req, res) {
         }
 
         async function sendAccountUpdateToOrbit(userAccountMatchingToken, userAccountDetails) {
-
             try {
+                const edmsManagePortalCustomerUrl = config.edmsHost + '/api/v1/managePortalCustomer';
+                const edmsBearerToken = await HelperService.getEdmsAccessToken();
+                const startTime = new Date();
 
-                var edmsManagePortalCustomerUrl = config.edmsHost + '/api/v1/managePortalCustomer'
-                var edmsBearerToken = await HelperService.getEdmsAccessToken()
-
-                let accountManagementObject = {
-                    "portalCustomerUpdate": {
-                        "userId": "legalisation",
-                        "timestamp": (new Date()).getTime().toString(),
-                        "portalCustomer": {
-                            "portalCustomerId": userAccountMatchingToken.id,
-                            "forenames": userAccountDetails.first_name,
-                            "surname": userAccountDetails.last_name,
-                            "primaryTelephone": userAccountDetails.telephone,
-                            "mobileTelephone": (userAccountDetails.mobileNo !== null) ? userAccountDetails.mobileNo : '',
-                            "eveningTelephone": '',
-                            "email": userAccountMatchingToken.email,
-                            "companyName": userAccountDetails.company_name,
-                            "companyRegistrationNumber": ''
-                        }
-                    }
-                }
-
-                request.post({
-                    headers: {
-                        'content-type': 'application/json',
-                        'Authorization': `Bearer ${edmsBearerToken}`
+                const accountManagementObject = {
+                    portalCustomerUpdate: {
+                        userId: "legalisation",
+                        timestamp: new Date().getTime().toString(),
+                        portalCustomer: {
+                            portalCustomerId: userAccountMatchingToken.id,
+                            forenames: userAccountDetails.first_name,
+                            surname: userAccountDetails.last_name,
+                            primaryTelephone: userAccountDetails.telephone,
+                            mobileTelephone: userAccountDetails.mobileNo !== null ? userAccountDetails.mobileNo : '',
+                            eveningTelephone: '',
+                            email: userAccountMatchingToken.email,
+                            companyName: userAccountDetails.company_name,
+                            companyRegistrationNumber: '',
+                        },
                     },
-                    url: edmsManagePortalCustomerUrl,
-                    json: true,
-                    body: accountManagementObject
-                }, function (error, response, body) {
-                    if (error) {
-                        console.log(JSON.stringify(error));
-                    } else if (response.statusCode === 200) {
-                        console.log('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE SENT TO ORBIT SUCCESSFULLY FOR USER_ID ' + userAccountMatchingToken.id);
-                    } else {
-                        console.error('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE FAILED SENDING TO ORBIT FOR USER_ID ' + userAccountMatchingToken.id);
-                        console.error('response code: ' + response.code);
-                        console.error(body);
+                };
+
+                request.post(
+                    {
+                        headers: {
+                            'content-type': 'application/json',
+                            Authorization: `Bearer ${edmsBearerToken}`,
+                        },
+                        url: edmsManagePortalCustomerUrl,
+                        json: true,
+                        body: accountManagementObject,
+                    },
+                    function (error, response, body) {
+                        const endTime = new Date();
+                        const elapsedTime = endTime - startTime;
+
+                        if (error) {
+                            console.log(JSON.stringify(error));
+                        } else if (response.statusCode === 200) {
+                            console.log(
+                                '[ACCOUNT MANAGEMENT] ACCOUNT UPDATE SENT TO ORBIT SUCCESSFULLY FOR USER_ID ' +
+                                userAccountMatchingToken.id
+                            );
+                        } else {
+                            console.error(
+                                '[ACCOUNT MANAGEMENT] ACCOUNT UPDATE FAILED SENDING TO ORBIT FOR USER_ID ' +
+                                userAccountMatchingToken.id
+                            );
+                            console.error('response code: ' + response.code);
+                            console.error(body);
+                        }
+
+                        console.log(`Orbit account management request response time: ${elapsedTime}ms`);
                     }
-                })
-
+                );
             } catch (error) {
-                console.log('approve.sendAccountUpdateToOrbit', error)
+                console.log('approve.sendAccountUpdateToOrbit', error);
             }
-
         }
 
     } catch (error) {
@@ -550,55 +561,68 @@ module.exports.reject = async function(req, res) {
         }
 
         async function sendAccountUpdateToOrbit(userAccountMatchingToken, userAccountDetails) {
-
             try {
+                const edmsManagePortalCustomerUrl = config.edmsHost + '/api/v1/managePortalCustomer';
+                const edmsBearerToken = await HelperService.getEdmsAccessToken();
+                const startTime = new Date();
 
-                var edmsManagePortalCustomerUrl = config.edmsHost + '/api/v1/managePortalCustomer'
-                var edmsBearerToken = await HelperService.getEdmsAccessToken()
-
-                let accountManagementObject = {
-                    "portalCustomerUpdate": {
-                        "userId": "legalisation",
-                        "timestamp": (new Date()).getTime().toString(),
-                        "portalCustomer": {
-                            "portalCustomerId": userAccountMatchingToken.id,
-                            "forenames": userAccountDetails.first_name,
-                            "surname": userAccountDetails.last_name,
-                            "primaryTelephone": userAccountDetails.telephone,
-                            "mobileTelephone": (userAccountDetails.mobileNo !== null) ? userAccountDetails.mobileNo : '',
-                            "eveningTelephone": "",
-                            "email": userAccountMatchingToken.email,
-                            "companyName": "",
-                            "companyRegistrationNumber": ""
-                        }
-                    }
-                }
-
-                request.post({
-                    headers: {
-                        'content-type': 'application/json',
-                        'Authorization': `Bearer ${edmsBearerToken}`
+                const accountManagementObject = {
+                    portalCustomerUpdate: {
+                        userId: 'legalisation',
+                        timestamp: new Date().getTime().toString(),
+                        portalCustomer: {
+                            portalCustomerId: userAccountMatchingToken.id,
+                            forenames: userAccountDetails.first_name,
+                            surname: userAccountDetails.last_name,
+                            primaryTelephone: userAccountDetails.telephone,
+                            mobileTelephone:
+                                userAccountDetails.mobileNo !== null ? userAccountDetails.mobileNo : '',
+                            eveningTelephone: '',
+                            email: userAccountMatchingToken.email,
+                            companyName: '',
+                            companyRegistrationNumber: '',
+                        },
                     },
-                    url: edmsManagePortalCustomerUrl,
-                    json: true,
-                    body: accountManagementObject
-                }, function (error, response, body) {
-                    if (error) {
-                        console.log(JSON.stringify(error));
-                    } else if (response.statusCode === 200) {
-                        console.log('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE SENT TO ORBIT SUCCESSFULLY FOR USER_ID ' + userAccountMatchingToken.id);
-                    } else {
-                        console.error('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE FAILED SENDING TO ORBIT FOR USER_ID ' + userAccountMatchingToken.id);
-                        console.error('response code: ' + response.code);
-                        console.error(body);
+                };
+
+                request.post(
+                    {
+                        headers: {
+                            'content-type': 'application/json',
+                            Authorization: `Bearer ${edmsBearerToken}`,
+                        },
+                        url: edmsManagePortalCustomerUrl,
+                        json: true,
+                        body: accountManagementObject,
+                    },
+                    function (error, response, body) {
+                        const endTime = new Date();
+                        const elapsedTime = endTime - startTime;
+
+                        if (error) {
+                            console.log(JSON.stringify(error));
+                        } else if (response.statusCode === 200) {
+                            console.log(
+                                '[ACCOUNT MANAGEMENT] ACCOUNT UPDATE SENT TO ORBIT SUCCESSFULLY FOR USER_ID ' +
+                                userAccountMatchingToken.id
+                            );
+                        } else {
+                            console.error(
+                                '[ACCOUNT MANAGEMENT] ACCOUNT UPDATE FAILED SENDING TO ORBIT FOR USER_ID ' +
+                                userAccountMatchingToken.id
+                            );
+                            console.error('response code: ' + response.code);
+                            console.error(body);
+                        }
+
+                        console.log(`Orbit account management request response time: ${elapsedTime}ms`);
                     }
-                })
-
+                );
             } catch (error) {
-                console.log('reject.sendAccountUpdateToOrbit', error)
+                console.log('reject.sendAccountUpdateToOrbit', error);
             }
-
         }
+
 
         async function findAccountDetails(id) {
             try {
