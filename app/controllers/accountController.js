@@ -55,30 +55,45 @@ function sendToCasebook(objectString, accountManagementObject, user) {
 
 async function sendToOrbit(accountManagementObject, user) {
     try {
-        var edmsManagePortalCustomerUrl = config.edmsHost + '/api/v1/managePortalCustomer'
-        var edmsBearerToken = await HelperService.getEdmsAccessToken()
+        const edmsManagePortalCustomerUrl = config.edmsHost + '/api/v1/managePortalCustomer';
+        const edmsBearerToken = await HelperService.getEdmsAccessToken();
+        const startTime = new Date();
 
-        request.post({
-            headers: {
-                'content-type': 'application/json',
-                'Authorization': `Bearer ${edmsBearerToken}`
+        request.post(
+            {
+                headers: {
+                    'content-type': 'application/json',
+                    Authorization: `Bearer ${edmsBearerToken}`,
+                },
+                url: edmsManagePortalCustomerUrl,
+                json: true,
+                body: accountManagementObject,
             },
-            url: edmsManagePortalCustomerUrl,
-            json: true,
-            body: accountManagementObject
-        }, function (error, response, body) {
-            if (error) {
-                console.log(JSON.stringify(error));
-            } else if (response.statusCode === 200) {
-                console.log('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE SENT TO ORBIT SUCCESSFULLY FOR USER_ID ' + user.id);
-            } else {
-                console.error('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE FAILED SENDING TO ORBIT FOR USER_ID ' + user.id);
-                console.error('response code: ' + response.code);
-                console.error(body);
+            function (error, response, body) {
+                const endTime = new Date();
+                const elapsedTime = endTime - startTime;
+
+                if (error) {
+                    console.log(JSON.stringify(error));
+                } else if (response.statusCode === 200) {
+                    console.log(
+                        '[ACCOUNT MANAGEMENT] ACCOUNT UPDATE SENT TO ORBIT SUCCESSFULLY FOR USER_ID ' +
+                        user.id
+                    );
+                } else {
+                    console.error(
+                        '[ACCOUNT MANAGEMENT] ACCOUNT UPDATE FAILED SENDING TO ORBIT FOR USER_ID ' +
+                        user.id
+                    );
+                    console.error('response code: ' + response.code);
+                    console.error(body);
+                }
+
+                console.log(`Orbit account management request response time: ${elapsedTime}ms`);
             }
-        })
+        );
     } catch (error) {
-        console.error(`sendToOrbit: ${error}`)
+        console.error(`sendToOrbit: ${error}`);
     }
 }
 
