@@ -28,12 +28,12 @@
 <%}%>
 
 <div class="column-two-thirds">
-    <h1 class="heading-xlarge">Apply to use the Premium Service</h1>
+    <h1 class="heading-xlarge">Apply to register as a Next-Day service provider</h1>
 
-    <p>The premium service is a counter service for pre-registered businesses only, who have a genuine business need for regular access to a same-day legalisation service.</p>
+    <p>The Next-Day service is a bulk processing service for pre-approved businesses only, who can demonstrate a genuine need for access.</p>
     <p>You can choose to <a href="<%= back_link%>" class="govuk-link">skip this process</a> and apply at a later time.</p>
 
-<form action="/api/user/request-premium-service-access?_csrf=<%=_csrf%>" method="post" id="request-premium-service-access">
+<form action="/api/user/request-business-service-access?_csrf=<%=_csrf%>" method="post" id="request-business-service-access">
 
 <div class="govuk-form-group <% if(error){errorsArray.forEach(function(err){if(err.fieldName==='company-name'){%>error<%}})} %>">
     <label class="form-label-bold" for="company-name">Company name</label>
@@ -91,7 +91,8 @@
 
 <div class="govuk-form-group <% if(error){errorsArray.forEach(function(err){if(err.fieldName==='justification'){%>error<%}})} %>">
     <label class="form-label-bold" for="justification">Justification</label>
-    <span id="justification-form-hint" class="form-hint">Please add any additional information to support your request, such as a description of the services you offer which require legalisation, or a link to your company website</span>
+    <span id="justification-form-hint" class="form-hint">Please provide evidence to support your request, such as your recent volume of Legalisation applications along with any additional information you feel will support your request.
+    Please note the Next-Day service is for regular, high-volume users and cannot be used as a one-off service.</span>
     <span class="error-message">
         <%if (error) { %>
             <%errorsArray.forEach(function(err){%>
@@ -101,7 +102,7 @@
             <% }) %>
         <%}%>
     </span>
-    <textarea class="govuk-textarea" name="justification" id="justification" rows="5" maxlength="250" aria-describedby="justification-form-hint"><% if (form_values && form_values['justification'] !== '') { %><%= form_values['justification'] %><% } %></textarea>
+    <textarea class="govuk-textarea" name="justification" id="justification" rows="5" maxlength="2500" aria-describedby="justification-form-hint"><% if (form_values && form_values['justification'] !== '') { %><%= form_values['justification'] %><% } %></textarea>
 </div>
 
     <br/>

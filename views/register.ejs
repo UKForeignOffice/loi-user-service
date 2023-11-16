@@ -67,21 +67,24 @@
 
         <h1 class="heading-xlarge">Create an account</h1>
 
-
-        <div class="help-content-div">
-            <a href="#" class="help-content-link icon-toggle-right expandable govuk-link">Benefits of creating an account<span class="visually-hidden noJs" > click to expand </span></a>
-            <div class="panel panel-border-narrow  help-content-body no-js-show">
-                <p>Online accounts are required for our premium business service. For the standard postal service they're
+        <details class="govuk-details" data-module="govuk-details">
+            <summary class="govuk-details__summary">
+                    <span class="govuk-details__summary-text">
+                        Benefits of creating an account
+                    </span>
+            </summary>
+            <div class="govuk-details__text">
+                <p>Online accounts are required for our Next-Day business service. For the standard postal service they're
                     optional. You'll get most benefit if you're a regular customer.</p>
                 <p>With an online account you can:</p>
                 <ul class="tick-list">
                     <li><i aria-hidden="true" class="flaticon-checked21 no-margin"></i>make applications more quickly by saving your details
-                        eg addresses, payment details</li>
+                        e.g. addresses, payment details</li>
                     <li><i aria-hidden="true" class="flaticon-checked21 no-margin"></i>check the status of an application</li>
                     <li><i aria-hidden="true" class="flaticon-checked21 no-margin"></i>see your recent application history</li>
                 </ul>
             </div>
-        </div>
+        </details>
 
 
         <!-- REGISTER FORM -->
@@ -162,7 +165,7 @@
                     <label id="legend_business" class="form-label-bold">Are you registering on behalf of a business?
                     </label>
 
-                    <span class="form-hint">Businesses can access our premium service</span>
+                    <span class="form-hint">Businesses who will regularly submit documents in bulk may be eligible to access our Next-Day service</span>
 
                     <div class="" id="business-question">
 
@@ -228,7 +231,7 @@
                                        value="<% if (form_values && form_values.company_name !== '') { %><%= form_values.company_name %><% } %>">
                             <br /><br />
                             <label class="form-label-bold" for="company_verification_check">Company verification</label>
-                            <span class="form-hint">The premium service is a counter service for businesses only. The Legalisation Office may ask for evidence to verify your details eg company letter, VAT number, Companies House number</span>
+                            <span class="form-hint">The Next-Day service is for approved businesses only. The Legalisation Office may ask for evidence to verify your details e.g. company letter, VAT number, Companies House number</span>
                                 <legend id="legend_company_verification_check"
                                         class="visuallyhidden">Company verification
                                 </legend>

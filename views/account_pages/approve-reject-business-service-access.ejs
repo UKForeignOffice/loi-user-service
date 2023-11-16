@@ -4,9 +4,9 @@
 
 <div class="column-two-thirds">
     <% if(requestType === 'approve') { %>
-    <h1 class="heading-xlarge">Approve premium service access</h1>
+    <h1 class="heading-xlarge">Approve Next-Day service access</h1>
     <% } else { %>
-    <h1 class="heading-xlarge">Reject premium service access</h1>
+    <h1 class="heading-xlarge">Reject Next-Day service access</h1>
     <% } %>
 
     <% if (success === false) { %>
@@ -17,11 +17,11 @@
 
         <% if(requestType === 'approve') { %>
 
-            <p>Premium service access has been granted for <%- userEmail %>.</p>
+            <p>Next-Day service access has been granted for <%- userEmail %>.</p>
 
         <% } else { %>
 
-            <p>Premium service access has been rejected for <%- userEmail %>.</p>
+            <p>Next-Day service access has been rejected for <%- userEmail %>.</p>
 
         <% } %>
 

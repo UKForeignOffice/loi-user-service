@@ -63,7 +63,7 @@
                 <div class="govuk-details__text">
 
                 <p>
-                    You can <a href="/api/user/enter-totp?resendPasscode=true">resend the code</a>
+                    <% if (mfaPreference === 'Email') { %>Emails <% } else { %>Text messages <% } %> can take a few minutes to arrive. If you do not receive a security code, you can <a href="/api/user/enter-totp?resendPasscode=true">resend it</a>
 
                     <% if (mfaPreference === 'Email' && mobileNo !== null) {%>
                         or <a href="/api/user/enter-totp?resendPasscode=true&changeMethod=true">send it as a text message</a> to the mobile number stored in your Legalisation account.
@@ -71,6 +71,18 @@
                         or <a href="/api/user/enter-totp?resendPasscode=true&changeMethod=true">send it as an email.</a>
                     <% } %>
                 </p>
+
+                <% if (mfaPreference === 'SMS') { %>
+
+                    <h2 class="form-label-bold">If your mobile number has changed</h2>
+                    <br />
+                    <p>You’ll need to:</p>
+                    <ul>
+                        <li><a href="/api/user/enter-totp?resendPasscode=true&changeMethod=true">send a security code via email</a></li>
+                        <li>update the mobile number stored in your Legalisation account</li>
+                    </ul>
+
+                <% } %>
 
                 </div>
             </details>
