@@ -4,6 +4,8 @@ const common = require('../../config/common.js');
 const emailService = require("../services/emailService");
 const envVariables = common.config();
 const request = require('request');
+const axios = require('axios');
+
 const config = require("../../config/environment");
 const HelperService = require("../services/HelperService");
 
@@ -415,29 +417,23 @@ module.exports.approve = async function(req, res) {
                     }
                 }
 
-                request.post({
-                    headers: {
-                        'content-type': 'application/json',
-                        'Authorization': `Bearer ${edmsBearerToken}`
-                    },
-                    url: edmsManagePortalCustomerUrl,
-                    json: true,
-                    body: accountManagementObject
-                }, function (error, response, body) {
-                    if (error) {
-                        console.log(JSON.stringify(error));
-                    } else if (response.statusCode === 200) {
-                        console.log('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE SENT TO ORBIT SUCCESSFULLY FOR USER_ID ' + userAccountMatchingToken.id);
-                    } else {
-                        console.error('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE FAILED SENDING TO ORBIT FOR USER_ID ' + userAccountMatchingToken.id);
-                        console.error('response code: ' + response.code);
-                        console.error(body);
-                    }
-                })
+                const headers = {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${edmsBearerToken}`,
+                        };
 
-            } catch (error) {
-                console.log('approve.sendAccountUpdateToOrbit', error)
-            }
+                        const response = await axios.post(edmsManagePortalCustomerUrl, accountManagementObject, { headers });
+
+                        if (response.status === 200) {
+                            console.log(`[ACCOUNT MANAGEMENT] ACCOUNT UPDATE SENT TO ORBIT SUCCESSFULLY FOR USER_ID ${userAccountMatchingToken.id}`);
+                        } else {
+                            console.error(`[ACCOUNT MANAGEMENT] ACCOUNT UPDATE FAILED SENDING TO ORBIT FOR USER_ID ${userAccountMatchingToken.id}`);
+                            console.error(`response code: ${response.status}`);
+                            console.error(response.data);
+                        }
+                    } catch (error) {
+                        console.log('approve.sendAccountUpdateToOrbit', error);
+                    }
 
         }
 
@@ -574,31 +570,24 @@ module.exports.reject = async function(req, res) {
                     }
                 }
 
-                request.post({
-                    headers: {
-                        'content-type': 'application/json',
-                        'Authorization': `Bearer ${edmsBearerToken}`
-                    },
-                    url: edmsManagePortalCustomerUrl,
-                    json: true,
-                    body: accountManagementObject
-                }, function (error, response, body) {
-                    if (error) {
-                        console.log(JSON.stringify(error));
-                    } else if (response.statusCode === 200) {
-                        console.log('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE SENT TO ORBIT SUCCESSFULLY FOR USER_ID ' + userAccountMatchingToken.id);
-                    } else {
-                        console.error('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE FAILED SENDING TO ORBIT FOR USER_ID ' + userAccountMatchingToken.id);
-                        console.error('response code: ' + response.code);
-                        console.error(body);
+                const headers = {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${edmsBearerToken}`,
+                        };
+
+                        const response = await axios.post(edmsManagePortalCustomerUrl, accountManagementObject, { headers });
+
+                        if (response.status === 200) {
+                            console.log(`[ACCOUNT MANAGEMENT] ACCOUNT UPDATE SENT TO ORBIT SUCCESSFULLY FOR USER_ID ${userAccountMatchingToken.id}`);
+                        } else {
+                            console.error(`[ACCOUNT MANAGEMENT] ACCOUNT UPDATE FAILED SENDING TO ORBIT FOR USER_ID ${userAccountMatchingToken.id}`);
+                            console.error(`response code: ${response.status}`);
+                            console.error(response.data);
+                        }
+                    } catch (error) {
+                        console.log('reject.sendAccountUpdateToOrbit', error);
                     }
-                })
-
-            } catch (error) {
-                console.log('reject.sendAccountUpdateToOrbit', error)
-            }
-
-        }
+                }
 
         async function findAccountDetails(id) {
             try {

@@ -14,6 +14,7 @@ const envVariables = common.config();
 const request = require('request');
 const crypto = require('crypto');
 const moment = require("moment");
+const axios = require('axios');
 const oneTimePasscodeService = require("../services/oneTimePasscodeService");
 const HelperService = require("../services/HelperService");
 
@@ -21,64 +22,54 @@ var mobilePattern = /^(\+|\d|\(|\#| )(\+|\d|\(| |\-)([0-9]|\(|\)| |\-){5,14}$/;
 var phonePattern = /^(\+|\d|\(|\#| )(\+|\d|\(| |\-)([0-9]|\(|\)| |\-){5,14}$/;
 
 
-function sendToCasebook(objectString, accountManagementObject, user) {
+async function sendToCasebook(objectString, accountManagementObject, user) {
 
     var hash = crypto.createHmac('sha512', config.hmacKey).update(new Buffer.from(objectString, 'utf-8')).digest('hex').toUpperCase();
 
-    request.post({
+    const response = await axios.post(config.accountManagementApiUrl, accountManagementObject, {
         headers: {
             "accept": "application/json",
             "hash": hash,
             "content-type": "application/json; charset=utf-8",
             "api-version": "3"
         },
-        url: config.accountManagementApiUrl,
-        agentOptions: config.certPath ? {
-            cert: config.certPath,
-            key: config.keyPath
-        } : null,
-        json: true,
-        body: accountManagementObject
-    }, function (error, response, body) {
-        if (error) {
-            console.log(JSON.stringify(error));
-        } else if (response.statusCode === 200) {
-            console.log('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE SENT TO CASEBOOK SUCCESSFULLY FOR USER_ID ' + user.id);
-        } else {
-            console.error('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE FAILED SENDING TO CASEBOOK FOR USER_ID ' + user.id);
-            console.error('response code: ' + response.code);
-            console.error(body);
-        }
-    })
-
-}
+        httpsAgent: config.certPath ? require('https').globalAgent : undefined
+        })
+    .then((response) => {
+            if (response.status === 200) {
+                console.log('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE SENT TO CASEBOOK SUCCESSFULLY FOR USER_ID ' + user.id);
+            } else {
+                console.error('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE FAILED SENDING TO CASEBOOK FOR USER_ID ' + user.id);
+                console.error('response code: ' + response.status);
+                console.error(response.data);
+            }
+        })
+        .catch((error) => {
+            console.error(JSON.stringify(error));
+        });
+    }
 
 async function sendToOrbit(accountManagementObject, user) {
     try {
-        var edmsManagePortalCustomerUrl = config.edmsHost + '/api/v1/managePortalCustomer'
-        var edmsBearerToken = await HelperService.getEdmsAccessToken()
+        const edmsManagePortalCustomerUrl = config.edmsHost + '/api/v1/managePortalCustomer';
+        const edmsBearerToken = await HelperService.getEdmsAccessToken();
 
-        request.post({
+        const response = await axios.post(edmsManagePortalCustomerUrl, accountManagementObject, {
             headers: {
                 'content-type': 'application/json',
                 'Authorization': `Bearer ${edmsBearerToken}`
-            },
-            url: edmsManagePortalCustomerUrl,
-            json: true,
-            body: accountManagementObject
-        }, function (error, response, body) {
-            if (error) {
-                console.log(JSON.stringify(error));
-            } else if (response.statusCode === 200) {
-                console.log('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE SENT TO ORBIT SUCCESSFULLY FOR USER_ID ' + user.id);
-            } else {
-                console.error('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE FAILED SENDING TO ORBIT FOR USER_ID ' + user.id);
-                console.error('response code: ' + response.code);
-                console.error(body);
             }
-        })
+        });
+
+        if (response.status === 200) {
+            console.log('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE SENT TO ORBIT SUCCESSFULLY FOR USER_ID ' + user.id);
+        } else {
+            console.error('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE FAILED SENDING TO ORBIT FOR USER_ID ' + user.id);
+            console.error('response code: ' + response.status);
+            console.error(response.data);
+        }
     } catch (error) {
-        console.error(`sendToOrbit: ${error}`)
+        console.error(`sendToOrbit: ${error}`);
     }
 }
 

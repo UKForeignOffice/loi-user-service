@@ -1,171 +1,84 @@
-/**
- * Created by preciousr on 21/01/2016.
- */
-var request = require('request'),
-    common = require('../../config/common.js'),
-    envVariables = common.config();
+const axios = require('axios');
+const common = require('../../config/common.js');
+const envVariables = common.config();
 
+const emailService = {
+  async sendOneTimePasscodeEmail(oneTimePasscode, email, userId) {
+    const url = '/one_time_passcode_email';
+    const postData = { to: email, oneTimePasscode: oneTimePasscode };
+    sendRequest(url, postData, userId, 'One time passcode email sent');
+  },
 
-emailService = {
-    sendOneTimePasscodeEmail: function(oneTimePasscode, email, userId){
+  async sendOneTimePasscodeSMS(oneTimePasscode, phoneNumber, userId) {
+    const url = '/one_time_passcode_sms';
+    const postData = { to: phoneNumber, oneTimePasscode: oneTimePasscode };
+    sendRequest(url, postData, userId, 'One time passcode SMS sent');
+  },
 
-        var url = '/one_time_passcode_email';
-        var postData= {to: email, oneTimePasscode: oneTimePasscode};
+  async lockedOut(name, email) {
+    const url = '/account_locked';
+    const postData = { to: email, name: name };
+    sendRequest(url, postData, '', 'Locked out email sent');
+  },
 
-        request(setOptions(postData, url), function (err, res) {
-            if(err) {
-                console.log(err);
-            } else {
-                console.log(`${res.statusCode} - One time passcode email sent for user ${userId}`);
-            }
-        });
+  async resetPassword(email, token) {
+    const url = '/reset-password';
+    const postData = { to: email, token: token };
+    console.log('test reset password');
+    sendRequest(url, postData, '', 'Reset password email sent');
+  },
 
-    },
-    sendOneTimePasscodeSMS: function(oneTimePasscode, phoneNumber, userId){
+  async confirmPasswordChange(name, email) {
+    const url = '/password-updated';
+    const postData = { to: email, name: name };
+    sendRequest(url, postData, '', 'Confirm password email sent');
+  },
 
-        var url = '/one_time_passcode_sms';
-        var postData= {to: phoneNumber, oneTimePasscode: oneTimePasscode};
+  async emailConfirmation(email, token) {
+    const url = '/confirm-email';
+    const postData = { to: email, token: token };
+    sendRequest(url, postData, '', 'Activation email sent');
+  },
 
-        request(setOptions(postData, url), function (err, res) {
-            if(err) {
-                console.log(err);
-            } else {
-                console.log(`${res.statusCode} - One time passcode sms sent for user ${userId}`);
-            }
-        });
+  async expiryWarning(email, accountExpiryDateText, dayAndMonthText, userID) {
+    const url = '/expiry_warning';
+    const postData = { to: email, accountExpiryDateText, dayAndMonthText };
+    sendRequest(url, postData, userID, 'Expiry warning email sent');
+  },
 
-    },
-    lockedOut: function(name,email){
+  async expiryConfirmation(email, userID) {
+    const url = '/expiry_confirmation';
+    const postData = { to: email };
+    sendRequest(url, postData, userID, 'Expiry confirmation email sent');
+  },
 
-        var url = '/account_locked';
-        var postData= {to: email, name: name};
+  async requestPremiumAccess(emailData) {
+    const url = '/request-premium-access';
+    sendRequest(url, emailData, emailData.userID, 'Premium service application request sent');
+  },
 
-        // send request to notification service
-        request(setOptions(postData, url), function (err, res) {
-            if(err) {
-                console.log(err);
-            } else {
-                console.log(`${res.statusCode} - lockedOut email sent`);
-            }
-        });
-    },
-    resetPassword: function(email,token){
-
-        var url = '/reset-password';
-        var postData= {to: email, token: token};
-
-        // send request to notification service
-        request(setOptions(postData, url), function (err, res) {
-            if(err) {
-                console.log(err);
-            } else {
-                console.log(`${res.statusCode} - reset password email sent`);
-            }
-        });
-    },
-    confirmPasswordChange: function(name,email){
-
-        var url = '/password-updated';
-        var postData= {to: email, name: name};
-
-        // send request to notification service
-        request(setOptions(postData, url), function (err, res) {
-            if(err) {
-                console.log(err);
-            } else {
-                console.log(`${res.statusCode} - confirm password email sent`);
-            }
-        });
-    },
-    emailConfirmation: function(email,token){
-
-        var url = '/confirm-email';
-        var postData= {to: email, token: token};
-
-        // send request to notification service
-        request(setOptions(postData, url), function (err, res) {
-            if(err) {
-                console.log(err);
-            } else {
-                console.log(`${res.statusCode} - activation email sent`);
-            }
-        });
-    },
-    expiryWarning: async function(email, accountExpiryDateText, dayAndMonthText, userID){
-        
-        var url = '/expiry_warning';
-        var postData= {to: email, accountExpiryDateText: accountExpiryDateText, dayAndMonthText: dayAndMonthText};
-        
-        // send request to notification service
-        request(setOptions(postData, url), function (err) {
-            if(err) {
-                console.log(err);
-            } else {
-                console.log('[USER CLEANUP JOB] WARNING EMAIL SENT SUCCESSFULLY FOR USER ' + userID);
-            }
-        });
-    },
-    expiryConfirmation: async function(email, userID){
-    
-        var url = '/expiry_confirmation';
-        var postData= {to: email};
-    
-        // send request to notification service
-        request(setOptions(postData, url), function (err) {
-            if(err) {
-                console.log(err);
-            } else {
-                console.log('[USER CLEANUP JOB] EXPIRY EMAIL SENT SUCCESSFULLY FOR USER ' + userID);
-            }
-        });
-    },
-    requestPremiumAccess: async function(emailData){
-
-        var url = '/request-premium-access';
-
-        // send request to notification service
-        request(setOptions(emailData, url), function (err) {
-            if(err) {
-                console.log(err);
-            } else {
-                console.log('PREMIUM SERVICE APPLICATION REQUEST SENT SUCCESSFULLY FOR USER ' + emailData.userID);
-            }
-        });
-    },
-    premiumServiceDecision: async function(emailData, decision){
-
-        var url = '/premium-service-decision';
-        var postData = {to: emailData.email, decision: decision};
-
-        // send request to notification service
-        request(setOptions(postData, url), function (err) {
-            if(err) {
-                console.log(err);
-            } else {
-                if (decision === 'approve') {
-                    console.log('PREMIUM SERVICE ACCESS APPROVAL EMAIL SENT SUCCESSFULLY FOR USER ' + emailData.id);
-                } else {
-                    console.log('PREMIUM SERVICE ACCESS REJECTION EMAIL SENT SUCCESSFULLY FOR USER ' + emailData.id);
-                }
-
-            }
-        });
-    }
+  async premiumServiceDecision(emailData, decision) {
+    const url = '/premium-service-decision';
+    const postData = { to: emailData.email, decision: decision };
+    const message =
+      decision === 'approve'
+        ? 'Premium service access approval email sent'
+        : 'Premium service access rejection email sent';
+    sendRequest(url, postData, emailData.id, message);
+  },
 };
 
-module.exports = emailService;
-
-function setOptions(postData, url){
-    var options = {
-        url: envVariables.notificationServiceURL+url,
-        headers:
-        {
-            'cache-control': 'no-cache',
-            'content-type': 'application/json'
-        },
-        method: 'POST',
-        json: true,
-        body: postData
-    };
-    return options;
+async function sendRequest(url, postData, userId, message) {
+  try {
+    const response = await axios.post(envVariables.notificationServiceURL + url, postData, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    console.log(`${response.status} - ${message} for user ${userId}`);
+  } catch (error) {
+    console.error(error);
+  }
 }
+
+module.exports = emailService;
