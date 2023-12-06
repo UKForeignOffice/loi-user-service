@@ -74,8 +74,6 @@ var attributes = {
         }
     },
 
-    premiumEnabled: {type: 'boolean', default: false},
-
     dropOffEnabled: {type: 'boolean', default: false},
 
     confirm_password: {
@@ -134,14 +132,14 @@ var attributes = {
     expiryConfirmationSent:{
         type:'boolean', default: false
     },
-    premiumUpgradeToken:{
+    businessUpgradeToken:{
         type: 'string'
     },
     premiumServiceEnabled: {
         type: 'boolean',
         default: false
     },
-    noOfPremiumRequestAttempts: {
+    noOfBusinessRequestAttempts: {
         type: 'integer'
     },
     oneTimePasscodeExpiry: {

@@ -5,7 +5,7 @@ const emailService = require("../services/emailService");
 const envVariables = common.config();
 const request = require('request');
 
-module.exports.showRequestPremiumServiceAccess = async function(req, res) {
+module.exports.showRequestBusinessServiceAccess = async function(req, res) {
 
     try {
 
@@ -22,7 +22,7 @@ module.exports.showRequestPremiumServiceAccess = async function(req, res) {
                     return await Model.User.findOne({where: {email: req.session.email}})
 
                 } catch (error) {
-                    console.log('showRequestPremiumServiceAccess.findUserAccount', error)
+                    console.log('showRequestBusinessServiceAccess.findUserAccount', error)
                 }
             }
 
@@ -32,7 +32,7 @@ module.exports.showRequestPremiumServiceAccess = async function(req, res) {
                     return await Model.AccountDetails.findOne({where: {user_id: user.id}})
 
                 } catch (error) {
-                    console.log('showRequestPremiumServiceAccess.findUserAccountDetails', error)
+                    console.log('showRequestBusinessServiceAccess.findUserAccountDetails', error)
                 }
             }
 
@@ -46,7 +46,7 @@ module.exports.showRequestPremiumServiceAccess = async function(req, res) {
                         }
                     }
 
-                    return res.render('account_pages/request-premium-service-access.ejs', {
+                    return res.render('account_pages/request-business-service-access.ejs', {
                         user: user,
                         account: account,
                         url: envVariables,
@@ -57,20 +57,20 @@ module.exports.showRequestPremiumServiceAccess = async function(req, res) {
                     });
 
                 } catch (error) {
-                    console.log('showRequestPremiumServiceAccess.renderPage', error)
+                    console.log('showRequestBusinessServiceAccess.renderPage', error)
                 }
             }
 
         }
 
     } catch (error) {
-        console.log('requestPremiumAccessController.showRequestPremiumServiceAccess', error)
+        console.log('requestBusinessServiceAccessController.showRequestBusinessServiceAccess', error)
     }
 
 
 };
 
-module.exports.requestPremiumServiceAccess = async function(req, res) {
+module.exports.requestBusinessServiceAccess = async function(req, res) {
 
     try {
 
@@ -98,7 +98,7 @@ module.exports.requestPremiumServiceAccess = async function(req, res) {
                 await assignTokenToUser(userAccount, token)
                 await updateCompanyName(userAccount)
                 emailData['userID'] = userAccount.id;
-                await emailService.requestPremiumAccess(emailData)
+                await emailService.requestBusinessAccess(emailData)
                 redirectToSelectServicePage()
 
             }
@@ -109,7 +109,7 @@ module.exports.requestPremiumServiceAccess = async function(req, res) {
                     return await Model.User.findOne({where: {email: req.session.email}})
 
                 } catch (error) {
-                    console.log('requestPremiumServiceAccess.findUserAccount', error)
+                    console.log('requestBusinessServiceAccess.findUserAccount', error)
                 }
             }
 
@@ -119,7 +119,7 @@ module.exports.requestPremiumServiceAccess = async function(req, res) {
                     return await Model.AccountDetails.findOne({where: {user_id: user.id}})
 
                 } catch (error) {
-                    console.log('showRequestPremiumServiceAccess.findUserAccountDetails', error)
+                    console.log('showRequestBusinessServiceAccess.findUserAccountDetails', error)
                 }
             }
 
@@ -127,13 +127,13 @@ module.exports.requestPremiumServiceAccess = async function(req, res) {
                 try {
 
                     // track the number of times user requests access
-                    let attempts = user.noOfPremiumRequestAttempts
+                    let attempts = user.noOfBusinessRequestAttempts
                     attempts = attempts + 1
 
                     return await Model.User.update(
                         {
-                            premiumUpgradeToken: token,
-                            noOfPremiumRequestAttempts: attempts
+                            businessUpgradeToken: token,
+                            noOfBusinessRequestAttempts: attempts
                         },
                         {
                             where: {
@@ -142,7 +142,7 @@ module.exports.requestPremiumServiceAccess = async function(req, res) {
                         })
 
                 } catch (error) {
-                    console.log('requestPremiumServiceAccess.assignTokenToUser', error)
+                    console.log('requestBusinessServiceAccess.assignTokenToUser', error)
                 }
             }
 
@@ -160,7 +160,7 @@ module.exports.requestPremiumServiceAccess = async function(req, res) {
                         })
 
                 } catch (error) {
-                    console.log('requestPremiumServiceAccess.updateCompanyName', error)
+                    console.log('requestBusinessServiceAccess.updateCompanyName', error)
                 }
             }
 
@@ -171,7 +171,7 @@ module.exports.requestPremiumServiceAccess = async function(req, res) {
 
 
                 } catch (error) {
-                    console.log('requestPremiumServiceAccess.generateUserToken', error)
+                    console.log('requestBusinessServiceAccess.generateUserToken', error)
                 }
             }
 
@@ -209,10 +209,10 @@ module.exports.requestPremiumServiceAccess = async function(req, res) {
                     }
 
                     // If the user has already applied 3 times then throw a validation error
-                    if (user.noOfPremiumRequestAttempts >= 3) {
+                    if (user.noOfBusinessRequestAttempts >= 3) {
                         errorsArray.push({
                             fieldName: '#',
-                            fieldError: 'You have exceeded the number of times you can apply for a premium account'
+                            fieldError: 'You have exceeded the number of times you can apply for a business account'
                         })
                     }
 
@@ -223,7 +223,7 @@ module.exports.requestPremiumServiceAccess = async function(req, res) {
                     } else return true
 
                 } catch (error) {
-                    console.log('requestPremiumServiceAccess.validateFormInput', error)
+                    console.log('requestBusinessServiceAccess.validateFormInput', error)
                 }
 
             }
@@ -231,7 +231,7 @@ module.exports.requestPremiumServiceAccess = async function(req, res) {
             function renderPage (user, account, errorsArray) {
                 try {
 
-                    return res.render('account_pages/request-premium-service-access.ejs', {
+                    return res.render('account_pages/request-business-service-access.ejs', {
                         user: user,
                         account: account,
                         url: envVariables,
@@ -242,26 +242,26 @@ module.exports.requestPremiumServiceAccess = async function(req, res) {
                     });
 
                 } catch (error) {
-                    console.log('requestPremiumServiceAccess.renderPage', error)
+                    console.log('requestBusinessServiceAccess.renderPage', error)
                 }
             }
 
             function redirectToSelectServicePage () {
                 try {
 
-                    req.flash('info', "Your request to gain access to the premium service has been submitted successfully. You will be notified via email when a decision has been made.");
+                    req.flash('info', "Your request to gain access to the Next-Day service has been submitted successfully. You will be notified via email when a decision has been made.");
                     return res.redirect(envVariables.applicationServiceURL + 'select-service');
 
 
                 } catch (error) {
-                    console.log('requestPremiumServiceAccess.redirectToSelectServicePage', error)
+                    console.log('requestBusinessServiceAccess.redirectToSelectServicePage', error)
                 }
             }
 
         }
 
     } catch (error) {
-        console.log('requestPremiumAccessController.requestPremiumServiceAccess', error)
+        console.log('requestBusinessAccessController.requestBusinessServiceAccess', error)
     }
 
 };
@@ -274,17 +274,17 @@ module.exports.approve = async function(req, res) {
         let userAccountMatchingToken = await findAccountMatchingToken(token)
 
         if (userAccountMatchingToken === null || userAccountMatchingToken.length === 0) {
-            return res.render('account_pages/approve-reject-premium-service-access.ejs', {
+            return res.render('account_pages/approve-reject-business-service-access.ejs', {
                 requestType: 'approve',
                 success: false
             });
         } else {
             let userAccountDetails = await findAccountDetails(userAccountMatchingToken.id)
             await grantPermissionsToUserAccount(userAccountMatchingToken)
-            await emailService.premiumServiceDecision(userAccountMatchingToken, 'approve')
+            await emailService.businessServiceDecision(userAccountMatchingToken, 'approve')
             await sendAccountUpdateToCASEBOOK(userAccountMatchingToken, userAccountDetails)
 
-            return res.render('account_pages/approve-reject-premium-service-access.ejs', {
+            return res.render('account_pages/approve-reject-business-service-access.ejs', {
                 userEmail: userAccountMatchingToken.email,
                 requestType: 'approve',
                 success: true
@@ -295,7 +295,7 @@ module.exports.approve = async function(req, res) {
             try {
                 return await Model.User.findOne({
                     where: {
-                        premiumUpgradeToken: token
+                        businessUpgradeToken: token
                     }
                 })
             } catch (error) {
@@ -318,8 +318,8 @@ module.exports.approve = async function(req, res) {
         async function grantPermissionsToUserAccount(userAccountMatchingToken) {
             try {
                 return await Model.User.update({
-                    premiumServiceEnabled: true,
-                    premiumUpgradeToken: null
+                    dropOffEnabled: true,
+                    businessUpgradeToken: null
                 }, {
                     where: {
                         email: userAccountMatchingToken.email
@@ -388,7 +388,7 @@ module.exports.approve = async function(req, res) {
         }
 
     } catch (error) {
-        console.log('requestPremiumAccessController.approve', error)
+        console.log('requestBusinessAccessController.approve', error)
     }
 
 };
@@ -401,7 +401,7 @@ module.exports.reject = async function(req, res) {
             try {
                 return await Model.User.findOne({
                     where: {
-                        premiumUpgradeToken: token
+                        businessUpgradeToken: token
                     }
                 })
             } catch (error) {
@@ -412,8 +412,8 @@ module.exports.reject = async function(req, res) {
         async function rejectPermissionsToUserAccount(userAccountMatchingToken) {
             try {
                 return await Model.User.update({
-                    premiumServiceEnabled: false,
-                    premiumUpgradeToken: null
+                    dropOffEnabled: false,
+                    businessUpgradeToken: null
                 }, {
                     where: {
                         email: userAccountMatchingToken.email
@@ -428,15 +428,15 @@ module.exports.reject = async function(req, res) {
         let userAccountMatchingToken = await findAccountMatchingToken(token)
 
         if (userAccountMatchingToken === null || userAccountMatchingToken.length === 0) {
-            return res.render('account_pages/approve-reject-premium-service-access.ejs', {
+            return res.render('account_pages/approve-reject-business-service-access.ejs', {
                 requestType: 'reject',
                 success: false
             });
         } else {
             await rejectPermissionsToUserAccount(userAccountMatchingToken)
-            await emailService.premiumServiceDecision(userAccountMatchingToken, 'reject')
+            await emailService.businessServiceDecision(userAccountMatchingToken, 'reject')
 
-            return res.render('account_pages/approve-reject-premium-service-access.ejs', {
+            return res.render('account_pages/approve-reject-business-service-access.ejs', {
                 userEmail: userAccountMatchingToken.email,
                 requestType: 'reject',
                 success: true
@@ -444,7 +444,7 @@ module.exports.reject = async function(req, res) {
         }
 
     } catch (error) {
-        console.log('requestPremiumAccessController.reject', error)
+        console.log('requestBusinessAccessController.reject', error)
     }
 
 };
