@@ -283,12 +283,8 @@ module.exports.approve = async function(req, res) {
         } else {
             let userAccountDetails = await findAccountDetails(userAccountMatchingToken.id)
             await grantPermissionsToUserAccount(userAccountMatchingToken)
-<<<<<<< HEAD:app/controllers/requestPremiumServiceAccessController.js
-            await emailService.premiumServiceDecision(userAccountMatchingToken, 'approve')
-            await sendAccountUpdateToOrbit(userAccountMatchingToken, userAccountDetails)
-=======
             await emailService.businessServiceDecision(userAccountMatchingToken, 'approve')
->>>>>>> origin/develop:app/controllers/requestBusinessServiceAccessController.js
+            await sendAccountUpdateToOrbit(userAccountMatchingToken, userAccountDetails)
             await sendAccountUpdateToCASEBOOK(userAccountMatchingToken, userAccountDetails)
 
             return res.render('account_pages/approve-reject-business-service-access.ejs', {
@@ -651,14 +647,10 @@ module.exports.reject = async function(req, res) {
             });
         } else {
             await rejectPermissionsToUserAccount(userAccountMatchingToken)
-<<<<<<< HEAD:app/controllers/requestPremiumServiceAccessController.js
             await clearCompanyName(userAccountMatchingToken)
-            await emailService.premiumServiceDecision(userAccountMatchingToken, 'reject')
+            await emailService.businessServiceDecision(userAccountMatchingToken, 'reject')
             await sendAccountUpdateToOrbit(userAccountMatchingToken, userAccountDetails)
             await sendAccountUpdateToCASEBOOK(userAccountMatchingToken, userAccountDetails)
-=======
-            await emailService.businessServiceDecision(userAccountMatchingToken, 'reject')
->>>>>>> origin/develop:app/controllers/requestBusinessServiceAccessController.js
 
             return res.render('account_pages/approve-reject-business-service-access.ejs', {
                 userEmail: userAccountMatchingToken.email,
