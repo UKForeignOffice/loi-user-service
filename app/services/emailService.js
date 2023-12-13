@@ -119,22 +119,22 @@ emailService = {
             }
         });
     },
-    requestPremiumAccess: async function(emailData){
+    requestBusinessAccess: async function(emailData){
 
-        var url = '/request-premium-access';
+        var url = '/request-business-access';
 
         // send request to notification service
         request(setOptions(emailData, url), function (err) {
             if(err) {
                 console.log(err);
             } else {
-                console.log('PREMIUM SERVICE APPLICATION REQUEST SENT SUCCESSFULLY FOR USER ' + emailData.userID);
+                console.log('BUSINESS SERVICE APPLICATION REQUEST SENT SUCCESSFULLY FOR USER ' + emailData.userID);
             }
         });
     },
-    premiumServiceDecision: async function(emailData, decision){
+    businessServiceDecision: async function(emailData, decision){
 
-        var url = '/premium-service-decision';
+        var url = '/business-service-decision';
         var postData = {to: emailData.email, decision: decision};
 
         // send request to notification service
@@ -143,9 +143,9 @@ emailService = {
                 console.log(err);
             } else {
                 if (decision === 'approve') {
-                    console.log('PREMIUM SERVICE ACCESS APPROVAL EMAIL SENT SUCCESSFULLY FOR USER ' + emailData.id);
+                    console.log('BUSINESS SERVICE ACCESS APPROVAL EMAIL SENT SUCCESSFULLY FOR USER ' + emailData.id);
                 } else {
-                    console.log('PREMIUM SERVICE ACCESS REJECTION EMAIL SENT SUCCESSFULLY FOR USER ' + emailData.id);
+                    console.log('BUSINESS SERVICE ACCESS REJECTION EMAIL SENT SUCCESSFULLY FOR USER ' + emailData.id);
                 }
 
             }

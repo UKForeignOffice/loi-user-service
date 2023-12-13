@@ -79,7 +79,7 @@
 
 </div>
 
-<%if(user.premiumServiceEnabled){%>
+<%if(user.dropOffEnabled){%>
 <h1 class="heading-xlarge" style="margin-bottom: 25px">Company details</h1>
 
 <div class="column-two-thirds" style="margin-bottom: 50px">
@@ -100,9 +100,9 @@
     </div>
 </div>
 <%}%>
-<% if (!user.premiumServiceEnabled && user.noOfPremiumRequestAttempts <= 3 && user.premiumUpgradeToken === null) {%>
+<% if (!user.dropOffEnabled && user.noOfBusinessRequestAttempts <= 3 && user.businessUpgradeToken === null) {%>
 <div class="column-two-thirds">
-   <p>If you represent a business you can <a class="govuk-link" href="/api/user/request-premium-service-access?from=account">register for the legalisation premium service</a></p>
+   <p>If you represent a business you can <a class="govuk-link" href="/api/user/request-business-service-access?from=account">register as a Next-Day service provider</a>.</p>
 </div>
 <%}%>
 
