@@ -5,7 +5,7 @@ var passport = require('passport'),
     passwordController = require('./controllers/passwordController.js'),
     accountController = require('./controllers/accountController.js'),
     addressController = require('./controllers/addressController.js'),
-    requestPremiumServiceAccessController = require('./controllers/requestPremiumServiceAccessController.js'),
+    requestBusinessServiceAccessController = require('./controllers/requestBusinessServiceAccessController.js'),
     Model = require('./model/models.js'),
     moment = require('moment'),
     nextpage,
@@ -381,7 +381,7 @@ module.exports = function(express,envVariables) {
                             req.session.initial=false;
                             req.session.payment_reference = user.payment_reference;
                             var queryString = '?';
-                            queryString += 'message=' + "Your account is now set up and you can start a new application";
+                            queryString += 'message=' + "Your account is now set up and you can start a new application.";
 
                             return res.redirect(envVariables.applicationServiceURL + 'loading-dashboard' + queryString);
                         });
@@ -502,10 +502,10 @@ module.exports = function(express,envVariables) {
     router.post('/edit-address',sessionValid, isSecondFactorAuthenticated, addressController.editAddress);
     router.get('/delete-address',sessionValid, isSecondFactorAuthenticated, addressController.deleteAddress);
 
-    router.get('/request-premium-service-access',sessionValid, isSecondFactorAuthenticated, requestPremiumServiceAccessController.showRequestPremiumServiceAccess);
-    router.post('/request-premium-service-access',sessionValid, isSecondFactorAuthenticated, requestPremiumServiceAccessController.requestPremiumServiceAccess);
-    router.get('/approve/:token', requestPremiumServiceAccessController.approve);
-    router.get('/reject/:token', requestPremiumServiceAccessController.reject);
+    router.get('/request-business-service-access',sessionValid, isSecondFactorAuthenticated, requestBusinessServiceAccessController.showRequestBusinessServiceAccess);
+    router.post('/request-business-service-access',sessionValid, isSecondFactorAuthenticated, requestBusinessServiceAccessController.requestBusinessServiceAccess);
+    router.get('/approve/:token', requestBusinessServiceAccessController.approve);
+    router.get('/reject/:token', requestBusinessServiceAccessController.reject);
 
     return router;
 };
