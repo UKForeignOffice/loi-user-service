@@ -284,8 +284,10 @@ module.exports.approve = async function(req, res) {
             let userAccountDetails = await findAccountDetails(userAccountMatchingToken.id)
             await grantPermissionsToUserAccount(userAccountMatchingToken)
             await emailService.businessServiceDecision(userAccountMatchingToken, 'approve')
-            await sendAccountUpdateToOrbit(userAccountMatchingToken, userAccountDetails)
-            await sendAccountUpdateToCASEBOOK(userAccountMatchingToken, userAccountDetails)
+
+            config.live_variables.caseManagementSystem === 'ORBIT' ?
+                await sendAccountUpdateToOrbit(userAccountMatchingToken, userAccountDetails) :
+                await sendAccountUpdateToCASEBOOK(userAccountMatchingToken, userAccountDetails)
 
             return res.render('account_pages/approve-reject-business-service-access.ejs', {
                 userEmail: userAccountMatchingToken.email,
@@ -649,8 +651,10 @@ module.exports.reject = async function(req, res) {
             await rejectPermissionsToUserAccount(userAccountMatchingToken)
             await clearCompanyName(userAccountMatchingToken)
             await emailService.businessServiceDecision(userAccountMatchingToken, 'reject')
-            await sendAccountUpdateToOrbit(userAccountMatchingToken, userAccountDetails)
-            await sendAccountUpdateToCASEBOOK(userAccountMatchingToken, userAccountDetails)
+
+            config.live_variables.caseManagementSystem === 'ORBIT' ?
+                await sendAccountUpdateToOrbit(userAccountMatchingToken, userAccountDetails) :
+                await sendAccountUpdateToCASEBOOK(userAccountMatchingToken, userAccountDetails);
 
             return res.render('account_pages/approve-reject-business-service-access.ejs', {
                 userEmail: userAccountMatchingToken.email,

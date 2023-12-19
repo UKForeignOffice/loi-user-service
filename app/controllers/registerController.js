@@ -458,8 +458,10 @@ module.exports.completeRegistration =function(req,res){
                     // calculate HMAC string and encode in base64
                     var objectString = JSON.stringify(accountManagementObject, null, 0);
 
-                    sendToCasebook(objectString, accountManagementObject, user)
-                    sendToOrbit(accountManagementObject, user)
+                    config.live_variables.caseManagementSystem === 'ORBIT' ?
+                        sendToOrbit(accountManagementObject, user) :
+                        sendToCasebook(objectString, accountManagementObject, user);
+
                 })
                     .catch(function (error) {
 
