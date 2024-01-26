@@ -272,6 +272,12 @@ module.exports.approve = async function(req, res) {
 
     try {
 
+        // Added this code to prevent HEAD requests triggering
+        // the logic in Production
+        if (req.method !== 'GET') {
+            return res.status(200).send('OK');
+        }
+
         let token = req.params['token']
         let userAccountMatchingToken = await findAccountMatchingToken(token)
 
@@ -463,6 +469,12 @@ module.exports.approve = async function(req, res) {
 module.exports.reject = async function(req, res) {
 
     try {
+
+        // Added this code to prevent HEAD requests triggering
+        // the logic in Production
+        if (req.method !== 'GET') {
+            return res.status(200).send('OK');
+        }
 
         async function findAccountMatchingToken(token) {
             try {
