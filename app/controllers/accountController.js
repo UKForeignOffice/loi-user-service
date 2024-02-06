@@ -5,21 +5,97 @@
  *
  */
 
-var async = require('async'),
-    crypto = require('crypto'),
-    request = require('request');
-const oneTimePasscodeService = require("../services/oneTimePasscodeService");
-const moment = require("moment");
 const emailService = require("../services/emailService");
-    config = require('../../config/environment'),
-    fs = require('fs'),
-    Model = require('../model/models.js'),
-    ValidationService = require('../services/ValidationService.js'),  common = require('../../config/common.js'),
-    envVariables = common.config();
+const config = require('../../config/environment');
+const fs = require('fs');
+const Model = require('../model/models.js');
+const ValidationService = require('../services/ValidationService.js'),  common = require('../../config/common.js');
+const envVariables = common.config();
+const request = require('request');
+const crypto = require('crypto');
+const moment = require("moment");
+const oneTimePasscodeService = require("../services/oneTimePasscodeService");
+const HelperService = require("../services/HelperService");
 
 var mobilePattern = /^(\+|\d|\(|\#| )(\+|\d|\(| |\-)([0-9]|\(|\)| |\-){5,14}$/;
 var phonePattern = /^(\+|\d|\(|\#| )(\+|\d|\(| |\-)([0-9]|\(|\)| |\-){5,14}$/;
-    //old pattern /([0-9]|[\-+#() ]){6,}/;
+
+
+function sendToCasebook(objectString, accountManagementObject, user) {
+
+    var hash = crypto.createHmac('sha512', config.hmacKey).update(new Buffer.from(objectString, 'utf-8')).digest('hex').toUpperCase();
+
+    request.post({
+        headers: {
+            "accept": "application/json",
+            "hash": hash,
+            "content-type": "application/json; charset=utf-8",
+            "api-version": "3"
+        },
+        url: config.accountManagementApiUrl,
+        agentOptions: config.certPath ? {
+            cert: config.certPath,
+            key: config.keyPath
+        } : null,
+        json: true,
+        body: accountManagementObject
+    }, function (error, response, body) {
+        if (error) {
+            console.log(JSON.stringify(error));
+        } else if (response.statusCode === 200) {
+            console.log('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE SENT TO CASEBOOK SUCCESSFULLY FOR USER_ID ' + user.id);
+        } else {
+            console.error('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE FAILED SENDING TO CASEBOOK FOR USER_ID ' + user.id);
+            console.error('response code: ' + response.code);
+            console.error(body);
+        }
+    })
+
+}
+
+async function sendToOrbit(accountManagementObject, user) {
+    try {
+        const edmsManagePortalCustomerUrl = config.edmsHost + '/api/v1/managePortalCustomer';
+        const edmsBearerToken = await HelperService.getEdmsAccessToken();
+        const startTime = new Date();
+
+        request.post(
+            {
+                headers: {
+                    'content-type': 'application/json',
+                    Authorization: `Bearer ${edmsBearerToken}`,
+                },
+                url: edmsManagePortalCustomerUrl,
+                json: true,
+                body: accountManagementObject,
+            },
+            function (error, response, body) {
+                const endTime = new Date();
+                const elapsedTime = endTime - startTime;
+
+                if (error) {
+                    console.log(JSON.stringify(error));
+                } else if (response.statusCode === 200) {
+                    console.log(
+                        '[ACCOUNT MANAGEMENT] ACCOUNT UPDATE SENT TO ORBIT SUCCESSFULLY FOR USER_ID ' +
+                        user.id
+                    );
+                } else {
+                    console.error(
+                        '[ACCOUNT MANAGEMENT] ACCOUNT UPDATE FAILED SENDING TO ORBIT FOR USER_ID ' +
+                        user.id
+                    );
+                    console.error('response code: ' + response.code);
+                    console.error(body);
+                }
+
+                console.log(`Orbit account management request response time: ${elapsedTime}ms`);
+            }
+        );
+    } catch (error) {
+        console.error(`sendToOrbit: ${error}`);
+    }
+}
 
 module.exports.showAccount = function(req, res) {
     Model.User.findOne({where:{email:req.session.email}}).then(function(user) {
@@ -79,109 +155,92 @@ module.exports.changeDetails = function(req, res) {
     Model.User.findOne({where:{email:req.session.email}})
         .then(function (user) {
             Model.AccountDetails.findOne({where:{user_id:user.id}}).then(function(data){
+
+                let mfaPreference = user.mfaPreference
+                let disableMobileNumberEditing = (mfaPreference === 'SMS')
+
+                let accountDetails = {
+                    first_name: req.body.first_name,
+                    last_name: req.body.last_name,
+                    telephone: phonePattern.test(req.body.telephone) ? req.body.telephone : '',
+                    mobileNo: (req.body.mobileNo !== '') ? mobilePattern.test(req.body.mobileNo) ? req.body.mobileNo : null : null,
+                    feedback_consent: req.body.feedback_consent || ''
+                };
+
                 if(data){
 
-                    let mfaPreference = user.mfaPreference
-                    let disableMobileNumberEditing = (mfaPreference === 'SMS')
+                    let companyName = (user.premiumServiceEnabled) ? data.company_name : ""
 
-                    var accountDetails = {
-                            first_name: req.body.first_name,
-                            last_name: req.body.last_name,
-                            telephone: phonePattern.test(req.body.telephone) ? req.body.telephone : '',
-                            mobileNo: (req.body.mobileNo !== '') ? mobilePattern.test(req.body.mobileNo) ? req.body.mobileNo : null : null,
-                            feedback_consent: req.body.feedback_consent || ''
-                        };
+                    if (user.mfaPreference === 'SMS') {
+                        accountDetails.mobileNo = data.mobileNo
+                    }
 
-                        if (user.mfaPreference === 'SMS') {
-                            accountDetails.mobileNo = data.mobileNo
-                        }
+                    Model.AccountDetails.update(accountDetails,{where:{user_id:user.id}})
+                        .then(function(){
+                            return res.redirect('/api/user/account');
+                        })
+                        .then(function () {
 
-                        Model.AccountDetails.update(accountDetails,{where:{user_id:user.id}})
-                            .then(function(){
-                                return res.redirect('/api/user/account');
-                            })
-                            .then(function () {
-                                var accountManagementObject = {
-                                    "portalCustomerUpdate": {
-                                        "userId": "legalisation",
-                                        "timestamp": (new Date()).getTime().toString(),
-                                        "portalCustomer": {
-                                            "portalCustomerId": user.id,
-                                            "forenames": accountDetails.first_name,
-                                            "surname": accountDetails.last_name,
-                                            "primaryTelephone": accountDetails.telephone,
-                                            "mobileTelephone": accountDetails.mobileNo,
-                                            "eveningTelephone": "",
-                                            "email": req.session.email,
-                                            "companyName": data.company_name !== 'N/A' ? data.company_name : "",
-                                            "companyRegistrationNumber": data.company_number
-                                        }
-                                    }
-                                };
-
-                                // calculate HMAC string and encode in base64
-                                var objectString = JSON.stringify(accountManagementObject, null, 0);
-                                var hash = crypto.createHmac('sha512', config.hmacKey).update(new Buffer.from(objectString, 'utf-8')).digest('hex').toUpperCase();
-
-                                request.post({
-                                    headers: {
-                                        "accept": "application/json",
-                                        "hash": hash,
-                                        "content-type": "application/json; charset=utf-8",
-                                        "api-version": "3"
-                                    },
-                                    url: config.accountManagementApiUrl,
-                                    agentOptions: config.certPath ? {
-                                        cert: config.certPath,
-                                        key: config.keyPath
-                                    } : null,
-                                    json: true,
-                                    body: accountManagementObject
-                                }, function (error, response, body) {
-                                    if (error) {
-                                        console.log(JSON.stringify(error));
-                                    } else if (response.statusCode === 200) {
-                                        console.log('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE SENT TO CASEBOOK SUCCESSFULLY FOR USER_ID ' + user.id);
-                                    } else {
-                                        console.error('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE FAILED SENDING TO CASEBOOK FOR USER_ID ' + user.id);
-                                        console.error('response code: ' + response.code);
-                                        console.error(body);
-                                    }
-                                })
-                            })
-                            .catch(function (error) {
-                                console.log(error);
-                                // Custom error array builder for email match confirmation
-                                var erroneousFields = [];
-
-                                if (req.param('first_name') === '') { erroneousFields.push('first_name'); }
-                                if (req.param('last_name') === '') { erroneousFields.push('last_name'); }
-                                if(typeof (req.param('feedback_consent'))=='undefined') {
-                                    erroneousFields.push('feedback_consent');
-                                }
-                                if (req.param('telephone') === ''|| req.param('telephone').length<6 || req.param('telephone').length>25  ||  !phonePattern.test(req.param('telephone'))) { erroneousFields.push('telephone'); }
-                                if (req.param('mobileNo') !== '' && typeof(req.param('mobileNo')) !== 'undefined') {
-                                    if (req.param('mobileNo') === '' || req.param('mobileNo').length < 6 || req.param('mobileNo').length > 25 || !mobilePattern.test(req.param('mobileNo'))) {
-                                        erroneousFields.push('mobileNo');
+                            var accountManagementObject = {
+                                "portalCustomerUpdate": {
+                                    "userId": "legalisation",
+                                    "timestamp": (new Date()).getTime().toString(),
+                                    "portalCustomer": {
+                                        "portalCustomerId": user.id,
+                                        "forenames": accountDetails.first_name,
+                                        "surname": accountDetails.last_name,
+                                        "primaryTelephone": accountDetails.telephone,
+                                        "mobileTelephone": accountDetails.mobileNo,
+                                        "eveningTelephone": "",
+                                        "email": req.session.email,
+                                        "companyName": companyName,
+                                        "companyRegistrationNumber": ''
                                     }
                                 }
+                            }
 
-                                dataValues = [];
-                                dataValues.push({
-                                    first_name: req.param('first_name') !== '' ? req.param('first_name') : "",
-                                    last_name: req.param('last_name') !== '' ? req.param('last_name') : "",
-                                    telephone: req.param('telephone') !== '' ? req.param('telephone') : "",
-                                    mobileNo: req.param('mobileNo') !== '' ? req.param('mobileNo') : "",
-                                    feedback_consent: typeof (req.param('feedback_consent')) !== 'undefined' ? req.param('feedback_consent') : ""
-                                });
-                                return res.render('account_pages/change-details.ejs', {
-                                    error_report:ValidationService.validateForm({error:error,erroneousFields: erroneousFields}),
-                                    form_values:req.body,
-                                    url:envVariables,
-                                    disableMobileNumberEditing: disableMobileNumberEditing
-                                });
+                            // calculate HMAC string and encode in base64
+                            var objectString = JSON.stringify(accountManagementObject, null, 0);
+
+                            config.live_variables.caseManagementSystem === 'ORBIT' ?
+                                sendToOrbit(accountManagementObject, user) :
+                                sendToCasebook(objectString, accountManagementObject, user);
+
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                            // Custom error array builder for email match confirmation
+                            var erroneousFields = [];
+
+
+                            if (req.param('first_name') === '') { erroneousFields.push('first_name'); }
+                            if (req.param('last_name') === '') { erroneousFields.push('last_name'); }
+                            if(typeof (req.param('feedback_consent'))=='undefined') {
+                                erroneousFields.push('feedback_consent');
+                            }
+                            if (req.param('telephone') === ''|| req.param('telephone').length<6 || req.param('telephone').length>25  ||  !phonePattern.test(req.param('telephone'))) { erroneousFields.push('telephone'); }
+                            if (req.param('mobileNo') !== '' && typeof(req.param('mobileNo')) !== 'undefined') {
+                                if (req.param('mobileNo') === '' || req.param('mobileNo').length < 6 || req.param('mobileNo').length > 25 || !mobilePattern.test(req.param('mobileNo'))) {
+                                    erroneousFields.push('mobileNo');
+                                }
+                            }
+
+                            dataValues = [];
+                            dataValues.push({
+                                first_name: req.param('first_name') !== '' ? req.param('first_name') : "",
+                                last_name: req.param('last_name') !== '' ? req.param('last_name') : "",
+                                telephone: req.param('telephone') !== '' ? req.param('telephone') : "",
+                                mobileNo: req.param('mobileNo') !== '' ? req.param('mobileNo') : "",
+                                feedback_consent: typeof (req.param('feedback_consent')) !== 'undefined' ? req.param('feedback_consent') : ""
+                            });
+                            return res.render('account_pages/change-details.ejs', {
+                                error_report:ValidationService.validateForm({error:error,erroneousFields: erroneousFields}),
+                                form_values:req.body,
+                                url:envVariables,
+                                disableMobileNumberEditing: disableMobileNumberEditing
                             });
 
+                        });
                 }else{
                     Model.AccountDetails.create(accountDetails)
                         .then(function(){
@@ -212,7 +271,10 @@ module.exports.changeDetails = function(req, res) {
                                 feedback_consent: typeof (req.param('feedback_consent')) !== 'undefined' ? req.param('feedback_consent') : ""
                             });
                             return res.render('account_pages/change-details.ejs', {
-                                error_report:ValidationService.validateForm({error:error,erroneousFields: erroneousFields}), form_values:req.body, url:envVariables
+                                error_report:ValidationService.validateForm({error:error,erroneousFields: erroneousFields}),
+                                form_values:req.body,
+                                url:envVariables,
+                                disableMobileNumberEditing: disableMobileNumberEditing
                             });
                         });
                 }
@@ -514,6 +576,7 @@ module.exports.changeCompanyDetails = function(req, res) {
                 if(data){
                     Model.AccountDetails.update(accountDetails,{where:{user_id:user.id}})
                         .then(function(){
+
                             var accountManagementObject = {
                                 "portalCustomerUpdate": {
                                     "userId": "legalisation",
@@ -532,37 +595,12 @@ module.exports.changeCompanyDetails = function(req, res) {
                                 }
                             };
 
-
-
-                            // calculate HMAC string and encode in base64
                             var objectString = JSON.stringify(accountManagementObject, null, 0);
-                            var hash = crypto.createHmac('sha512', config.hmacKey).update(new Buffer.from(objectString, 'utf-8')).digest('hex').toUpperCase();
 
-                            request.post({
-                                headers: {
-                                    "accept": "application/json",
-                                    "hash": hash,
-                                    "content-type": "application/json; charset=utf-8",
-                                    "api-version": "3"
-                                },
-                                url: config.accountManagementApiUrl,
-                                agentOptions: config.certPath ? {
-                                    cert: config.certPath,
-                                    key: config.keyPath
-                                } : null,
-                                json: true,
-                                body: accountManagementObject
-                            }, function (error, response, body) {
-                                if (error) {
-                                    console.log(JSON.stringify(error));
-                                } else if (response.statusCode === 200) {
-                                    console.log('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE SENT TO CASEBOOK SUCCESSFULLY FOR USER_ID ' + user.id);
-                                } else {
-                                    console.error('[ACCOUNT MANAGEMENT] ACCOUNT UPDATE FAILED SENDING TO CASEBOOK FOR USER_ID ' + user.id);
-                                    console.error('response code: ' + response.code);
-                                    console.error(body);
-                                }
-                            });
+                            config.live_variables.caseManagementSystem === 'ORBIT' ?
+                                sendToOrbit(accountManagementObject, user) :
+                                sendToCasebook(objectString, accountManagementObject, user);
+
 
                             return res.redirect('/api/user/account');
                         })
@@ -571,7 +609,6 @@ module.exports.changeCompanyDetails = function(req, res) {
                             var erroneousFields = [];
 
                             if (req.param('company_name') === '') { erroneousFields.push('company_name'); }
-
 
                             dataValues = [];
                             dataValues.push({
@@ -608,6 +645,6 @@ module.exports.changeCompanyDetails = function(req, res) {
 
 module.exports.changeEmail = function(req, res) {
     Model.User.findOne({where:{email:req.session.email}}).then(function(user) {
-            return res.render('account_pages/change-email.ejs', {url:envVariables});
-        });
+        return res.render('account_pages/change-email.ejs', {url:envVariables});
+    });
 };

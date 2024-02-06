@@ -281,10 +281,7 @@ module.exports = function(express,envVariables) {
                 back_link: '/api/user/sign-in',
                 mobileNo: accountData?.mobileNo
             })
-
         }
-
-
     })
 
     router.post('/enter-totp', isAuthenticated, async function (req, res){

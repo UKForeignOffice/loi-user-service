@@ -5,7 +5,7 @@
  *
  */
 
-var bcrypt = require('bcryptjs'),
+const bcrypt = require('bcryptjs'),
     request = require('request'),
     async = require('async'),
     config = require('../../config/environment'),
@@ -15,16 +15,94 @@ var bcrypt = require('bcryptjs'),
     ValidationService = require('../services/ValidationService.js'),  common = require('../../config/common.js'),
     envVariables = common.config(),
     validator = require('validator'),
-    dbConnection = require('../sequelize.js');
-    moment = require('moment')
+    dbConnection = require('../sequelize.js'),
+    moment = require('moment'),
+    { Op } = require("sequelize"),
+    emailService = require("../services/emailService"),
+    HelperService = require("../services/HelperService");
 
-    const { Op } = require("sequelize");
-const emailService = require("../services/emailService");
 
 
 var mobilePattern = /^(\+|\d|\(|\#| )(\+|\d|\(| |\-)([0-9]|\(|\)| |\-){5,14}$/;
 var phonePattern = /^(\+|\d|\(|\#| )(\+|\d|\(| |\-)([0-9]|\(|\)| |\-){5,14}$/;
-    //old pattern /([0-9]|[\-+#() ]){6,}/;
+//old pattern /([0-9]|[\-+#() ]){6,}/;
+
+function sendToCasebook(objectString, accountManagementObject, user) {
+
+    var hash = crypto.createHmac('sha512', config.hmacKey).update(new Buffer.from(objectString, 'utf-8')).digest('hex').toUpperCase();
+
+    request.post({
+        headers: {
+            "accept": "application/json",
+            "hash": hash,
+            "content-type": "application/json; charset=utf-8",
+            "api-version": "3"
+        },
+        url: config.accountManagementApiUrl,
+        agentOptions: config.certPath ? {
+            cert: config.certPath,
+            key: config.keyPath
+        } : null,
+        json: true,
+        body: accountManagementObject
+    }, function (error, response, body) {
+        if (error) {
+            console.log(JSON.stringify(error));
+        } else if (response.statusCode === 200) {
+            console.log('[ACCOUNT MANAGEMENT] ACCOUNT CREATION SENT TO CASEBOOK SUCCESSFULLY FOR USER_ID ' + user.id);
+        } else {
+            console.error('[ACCOUNT MANAGEMENT] ACCOUNT CREATION FAILED SENDING TO CASEBOOK FOR USER_ID ' + user.id);
+            console.error('response code: ' + response.code);
+            console.error(body);
+        }
+    })
+
+}
+
+async function sendToOrbit(accountManagementObject, user) {
+    try {
+        const edmsManagePortalCustomerUrl = config.edmsHost + '/api/v1/managePortalCustomer';
+        const edmsBearerToken = await HelperService.getEdmsAccessToken();
+        const startTime = new Date();
+
+        request.post(
+            {
+                headers: {
+                    'content-type': 'application/json',
+                    Authorization: `Bearer ${edmsBearerToken}`,
+                },
+                url: edmsManagePortalCustomerUrl,
+                json: true,
+                body: accountManagementObject,
+            },
+            function (error, response, body) {
+                const endTime = new Date();
+                const elapsedTime = endTime - startTime;
+
+                if (error) {
+                    console.log(JSON.stringify(error));
+                } else if (response.statusCode === 200) {
+                    console.log(
+                        '[ACCOUNT MANAGEMENT] ACCOUNT CREATION SENT TO ORBIT SUCCESSFULLY FOR USER_ID ' +
+                        user.id
+                    );
+                } else {
+                    console.error(
+                        '[ACCOUNT MANAGEMENT] ACCOUNT CREATION FAILED SENDING TO ORBIT FOR USER_ID ' +
+                        user.id
+                    );
+                    console.error('response code: ' + response.code);
+                    console.error(body);
+                }
+
+                console.log(`Orbit account management request response time: ${elapsedTime}ms`);
+            }
+        );
+    } catch (error) {
+        console.error(`sendToOrbit: ${error}`);
+    }
+}
+
 
 module.exports.usercheck = function(req, res) {
     if(typeof req.body['has-account'] == 'undefined'){
@@ -358,55 +436,33 @@ module.exports.completeRegistration =function(req,res){
 
                     }).then(function () {
 
-                        var accountManagementObject = {
-                            "portalCustomerUpdate": {
-                                "userId": "legalisation",
-                                "timestamp": (new Date()).getTime().toString(),
-                                "portalCustomer": {
-                                    "portalCustomerId": user.id,
-                                    "forenames": req.body.first_name,
-                                    "surname": req.body.last_name,
-                                    "primaryTelephone": phonePattern.test(req.body.telephone) ? req.body.telephone : '',
-                                    "mobileTelephone": (req.body.mobileNo !== '') ? mobilePattern.test(req.body.mobileNo) ? req.body.mobileNo : null : null,
-                                    "eveningTelephone": "",
-                                    "email": req.session.email,
-                                    "companyName": data.company_name !== 'N/A' ? data.company_name : "",
-                                    "companyRegistrationNumber": data.company_number
-                                }
+                    var accountManagementObject = {
+                        "portalCustomerUpdate": {
+                            "userId": "legalisation",
+                            "timestamp": (new Date()).getTime().toString(),
+                            "portalCustomer": {
+                                "portalCustomerId": user.id,
+                                "forenames": req.body.first_name,
+                                "surname": req.body.last_name,
+                                "primaryTelephone": phonePattern.test(req.body.telephone) ? req.body.telephone : '',
+                                "mobileTelephone": (req.body.mobileNo !== '') ? mobilePattern.test(req.body.mobileNo) ? req.body.mobileNo : null : null,
+                                "eveningTelephone": "",
+                                "email": req.session.email,
+                                "companyName": "",
+                                "companyRegistrationNumber": data.company_number
                             }
-                        };
+                        }
+                    };
 
 
-                        // calculate HMAC string and encode in base64
-                        var objectString = JSON.stringify(accountManagementObject, null, 0);
-                        var hash = crypto.createHmac('sha512', config.hmacKey).update(new Buffer.from(objectString, 'utf-8')).digest('hex').toUpperCase();
+                    // calculate HMAC string and encode in base64
+                    var objectString = JSON.stringify(accountManagementObject, null, 0);
 
-                        request.post({
-                            headers: {
-                                "accept": "application/json",
-                                "hash": hash,
-                                "content-type": "application/json; charset=utf-8",
-                                "api-version": "3"
-                            },
-                            url: config.accountManagementApiUrl,
-                            agentOptions: config.certPath ? {
-                                cert: config.certPath,
-                                key: config.keyPath
-                            } : null,
-                            json: true,
-                            body: accountManagementObject
-                        }, function (error, response, body) {
-                            if (error) {
-                                console.log(JSON.stringify(error));
-                            } else if (response.statusCode === 200) {
-                                console.log('[ACCOUNT MANAGEMENT] ACCOUNT CREATION SENT TO CASEBOOK SUCCESSFULLY FOR USER_ID ' + user.id);
-                            } else {
-                                console.error('[ACCOUNT MANAGEMENT] ACCOUNT CREATION FAILED SENDING TO CASEBOOK FOR USER_ID ' + user.id);
-                                console.error('response code: ' + response.code);
-                                console.error(body);
-                            }
-                        })
-                    })
+                    config.live_variables.caseManagementSystem === 'ORBIT' ?
+                        sendToOrbit(accountManagementObject, user) :
+                        sendToCasebook(objectString, accountManagementObject, user);
+
+                })
                     .catch(function (error) {
 
                         console.log(error);

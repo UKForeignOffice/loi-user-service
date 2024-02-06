@@ -101,6 +101,7 @@ app.use(function (req, res, next) {
         service_public: environmentVariables.live_variables.Public,
         start_url: environmentVariables.live_variables.startPageURL,
         govuk_url: environmentVariables.live_variables.GOVUKURL,
+        caseManagementSystem: environmentVariables.live_variables.caseManagementSystem,
         _csrf: req.csrfToken()
     };
     next();
@@ -121,14 +122,12 @@ app.use(bodyParser.urlencoded({
 }));
 
 
-
-
-
 // =====================================
 // JOB SCHEDULER
 // =====================================
 const schedule = require('node-schedule');
 const jobs = require('./config/jobs.js');
+
 // As there are 2 instances running, we need a random time, or two emails will be sent
 // for accounts nearing expiration. (Flag will be set by time of 2nd job execution to stop duplicate)
 const hourlyInterval = environmentVariables.userAccountSettings.jobScheduleHour
@@ -176,8 +175,6 @@ function moveItem(item){
         if (err) return console.error(err);
     });
 }
-
-
 
 
 // =====================================

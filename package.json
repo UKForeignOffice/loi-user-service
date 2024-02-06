@@ -5,6 +5,7 @@
   "main": "app.js",
   "dependencies": {
     "async": "^3.2.4",
+    "axios": "^1.4.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "1.20.2",
     "connect-flash": "~0.1.1",
@@ -21,6 +22,7 @@
     "govuk_frontend_toolkit": "9.0.1",
     "isemail": "^3.2.0",
     "moment": "^2.29.1",
+    "node-cache": "^5.1.2",
     "node-schedule": "^2.1.1",
     "passport": "^0.6.0",
     "passport-local": "~1.0.0",
@@ -30,7 +32,7 @@
     "redis": "^4.6.8",
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
-    "sequelize": "^6.32.1",
+    "sequelize": "^6.33.0",
     "unirest": "0.6.0",
     "validator": "^13.11.0",
     "winston": "^3.10.0"
@@ -38,7 +40,7 @@
   "devDependencies": {
     "chai": "^4.3.8",
     "mocha": "^10.2.0",
-    "sass": "^1.66.1",
+    "sass": "^1.67.0",
     "supertest": "^6.3.3"
   },
   "scripts": {

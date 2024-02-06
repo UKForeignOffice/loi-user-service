@@ -14,6 +14,10 @@ const accountManagementApiUrl = process.env.ACCOUNTMANAGEMENTAPIURL;
 const certPath = process.env.NODE_ENV !== 'development' ? process.env.CASEBOOKCERTIFICATE : process.env.CASEBOOKCERTIFICATE.replace(/\\n/gm, '\n');
 const keyPath = process.env.NODE_ENV !== 'development' ? process.env.CASEBOOKKEY : process.env.CASEBOOKKEY.replace(/\\n/gm, '\n');
 const hmacKey = process.env.HMACKEY;
+const edmsHost = process.env.EDMS_HOST;
+const edmsBearerToken = JSON.parse(process.env.EDMS_BEARER_TOKEN);
+const edmsAuthHost = process.env.EDMS_AUTH_HOST;
+const edmsAuthScope = process.env.EDMS_AUTH_SCOPE;
 
 const sequelizeUsers = new Sequelize(
     sequelizeusers.sequelizeusers.dbName,
@@ -84,7 +88,11 @@ const config = {
     "accountManagementApiUrl": accountManagementApiUrl,
     "certPath": certPath,
     "keyPath": keyPath,
-    "hmacKey": hmacKey
+    "hmacKey": hmacKey,
+    edmsHost,
+    edmsBearerToken,
+    edmsAuthHost,
+    edmsAuthScope
 };
 
 module.exports = config;
