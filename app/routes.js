@@ -435,6 +435,13 @@ module.exports = function(express,envVariables) {
     });
 
     router.get('/reset/:token', function(req, res) {
+
+        // Added this code to prevent HEAD requests triggering
+        // the logic in Production
+        if (req.method !== 'GET') {
+            return res.status(200).send('OK');
+        }
+
         Model.User.findOne({where:{ resetPasswordToken: req.params.token, resetPasswordExpires: { [Op.gt]: new Date()} }})
             .then( function(user) {
                 if (!user) {
