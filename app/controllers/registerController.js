@@ -596,18 +596,24 @@ module.exports.resendActivationEmail = async function(req, res) {
 
 module.exports.activate = async function(req, res) {
     try {
-        // Find User with the password token which has not expired
+
+        // Added this code to prevent HEAD requests triggering
+        // the logic in Production
+        if (req.method !== 'GET') {
+            return res.status(200).send('OK');
+        }
+
+        // Attempt to find a user with a valid, non-expired activation token
         const user = await Model.User.findOne({
             where: {
                 activationToken: req.params.token,
-                activationTokenExpires: {
-                    [Op.gt]: new Date()
-                }
+                activationTokenExpires: { [Op.gt]: new Date() },
             }
         });
 
         if (!user) {
-            req.flash('error', 'Activation reset token is invalid. Sign in to send a new one.');
+            // If no user is found with the provided token, redirect with an error message
+            req.flash('error', 'Activation token is invalid or has expired. Please request a new one.');
             return res.redirect('/api/user/sign-in');
         }
 
