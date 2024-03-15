@@ -114,18 +114,18 @@
                 <input class="govuk-input govuk-!-width-one-quarter" id="postcode" aria-required="true" name="postcode" type="text" value="" >
             </div>
 
-            <div class="form-group" id="legend_telephone">
-                <label class="form-label-bold" for="telephone">Primary number</label>
-                <span class="form-hint">Contact telephone number for this address for delivery questions or updates</span>
-
-                <input class="govuk-input govuk-!-width-one-half" type="tel" id="telephone" aria-required="true" name="telephone" maxlength="255" value="<% if (contact_telephone) { %><%= contact_telephone %><% } %>">
-            </div>
-
             <div class="form-group" id="legend_mobileNo">
-                    <label class="form-label-bold" for="telephone">Mobile number <span>(optional)</span></label>
+                    <label class="form-label-bold" for="telephone">Mobile number</label>
                     <span class="form-hint">Contact mobile number for this address for delivery questions or updates</span>
 
                 <input class="govuk-input govuk-!-width-one-half" type="tel" id="mobileNo" aria-required="true" name="mobileNo" maxlength="255" value="<% if (contact_mobileNo) { %><%= contact_mobileNo %><% } %>">
+            </div>
+
+            <div class="form-group" id="legend_telephone">
+                <label class="form-label-bold" for="telephone">Secondary phone number <span>(optional)</span></label>
+                <span class="form-hint">Contact telephone number for this address for delivery questions or updates</span>
+
+                <input class="govuk-input govuk-!-width-one-half" type="tel" id="telephone" aria-required="true" name="telephone" maxlength="255" value="<% if (contact_telephone) { %><%= contact_telephone %><% } %>">
             </div>
 
             <div class="form-group" id="legend_email">

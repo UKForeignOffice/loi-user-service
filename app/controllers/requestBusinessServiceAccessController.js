@@ -15,8 +15,10 @@ module.exports.showRequestBusinessServiceAccess = async function(req, res) {
 
             let userAccount = await findUserAccount()
             let userAccountDetails = await findUserAccountDetails(userAccount)
-            renderPage(userAccount, userAccountDetails)
 
+            if (userAccount.businessUpgradeToken) return res.redirect('/api/user/account');
+
+            renderPage(userAccount, userAccountDetails)
 
             async function findUserAccount () {
                 try {
@@ -215,6 +217,14 @@ module.exports.requestBusinessServiceAccess = async function(req, res) {
                         errorsArray.push({
                             fieldName: '#',
                             fieldError: 'You have exceeded the number of times you can apply for a business account'
+                        })
+                    }
+
+                    // If the user has a pending request inflight then what are they even doing?
+                    if (user.businessUpgradeToken) {
+                        errorsArray.push({
+                            fieldName: '#',
+                            fieldError: 'You have already requested access to a business account'
                         })
                     }
 

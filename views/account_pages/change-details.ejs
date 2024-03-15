@@ -61,8 +61,23 @@
                 <input class="govuk-input govuk-!-width-one-half" id="last_name" autocomplete="off" type="text" name="last_name" aria-required="true" value="<% if(form_values){%><%=form_values.last_name%><%} %>">
             </fieldset>
         </div>
+            <div class="form-group <% if (error_report && error_report[1][0].erroneousFields.indexOf('mobileNo')>-1) { %>error<% } %>">
+                <label for="mobileNo" class="form-label-bold">Mobile number </label>
+                <fieldset>
+                    <% if (error_report) { %>
+                        <% error_report[0][0].errMsgs.forEach( function(error) { %>
+                            <% if (error.questionId=="mobileNo") { %>
+                                <span class="error-message">
+                       <%= error.fieldSolution %>
+                    </span>
+                            <% } %>
+                        <% }) %>
+                    <% } %>
+                    <input type="tel" id="mobileNo" class="govuk-input govuk-!-width-one-half" autocomplete="off" name="mobileNo"  value="<% if(form_values && form_values.mobileNo!=null){%><%=form_values.mobileNo%><%} %>" <% if (disableMobileNumberEditing) {%>disabled<%}%>>
+                </fieldset>
+            </div>
         <div class="form-group <% if (error_report && error_report[1][0].erroneousFields.indexOf('telephone')>-1) { %>error<% } %>">
-            <label for="telephone" class="form-label-bold">Primary number</label>
+            <label for="telephone" class="form-label-bold">Secondary phone number <span>(optional)</span></label>
             <fieldset>
                     <% if (error_report) { %>
                     <% error_report[0][0].errMsgs.forEach( function(error) { %>
@@ -76,25 +91,10 @@
                 <input type="tel" id="telephone" class="govuk-input govuk-!-width-one-half" autocomplete="off" name="telephone" aria-required="true" value="<% if(form_values){%><%=form_values.telephone%><%} %>">
             </fieldset>
         </div>
-        <div class="form-group <% if (error_report && error_report[1][0].erroneousFields.indexOf('mobileNo')>-1) { %>error<% } %>">
-            <label for="mobileNo" class="form-label-bold">Mobile number </label>
-            <fieldset>
-                    <% if (error_report) { %>
-                    <% error_report[0][0].errMsgs.forEach( function(error) { %>
-                    <% if (error.questionId=="mobileNo") { %>
-                    <span class="error-message">
-                       <%= error.fieldSolution %>
-                    </span>
-                    <% } %>
-                    <% }) %>
-                    <% } %>
-                <input type="tel" id="mobileNo" class="govuk-input govuk-!-width-one-half" autocomplete="off" name="mobileNo"  value="<% if(form_values && form_values.mobileNo!=null){%><%=form_values.mobileNo%><%} %>" <% if (disableMobileNumberEditing) {%>disabled<%}%>>
-            </fieldset>
-        </div>
 
         <div class="form-group <% if (error_report && error_report[1][0].erroneousFields.indexOf('feedback_consent')>-1) { %>error<% } %>" >
             <h2 class="form-label-bold">Feedback</h2>
-            <p class="text">We welcome your views on the legalisation service. If you agree to be contacted by answering "Yes" below, you will be consenting to share your personal data - name, email address, telephone number and service received - with our independent partner research agency, IFF Research. You may withdraw your consent at any stage by emailing <a href="mailto:consular.research@fcdo.gov.uk" class="govuk-link">consular.research@fcdo.gov.uk<span class="visually-hidden"> opens in new window</span></a>. For more details on how your data will be handled in relation to feedback see the <a href="https://www.gov.uk/government/organisations/foreign-commonwealth-office/about/research" target="_blank" class="govuk-link">research privacy policy<span class="visually-hidden"> opens in new window</span></a>.<br></p>
+            <p class="text">We welcome your views on the legalisation service. If you agree to be contacted by answering "Yes" below, you will be consenting to share your personal data - name, email address, telephone numbers and service received - with our independent partner research agency, IFF Research. You may withdraw your consent at any stage by emailing <a href="mailto:consular.research@fcdo.gov.uk" class="govuk-link">consular.research@fcdo.gov.uk<span class="visually-hidden"> opens in new window</span></a>. For more details on how your data will be handled in relation to feedback see the <a href="https://www.gov.uk/government/organisations/foreign-commonwealth-office/about/research" target="_blank" class="govuk-link">research privacy policy<span class="visually-hidden"> opens in new window</span></a>.<br></p>
             <div class="govuk-radios govuk-radios--inline">
                 <p>Can our partner contact you for feedback to help improve this service?</p>
             <fieldset class="inline" id="legend-feedback" aria-required="true" role="radiogroup">

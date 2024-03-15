@@ -218,29 +218,10 @@ if (error_report) {
 
             <input class="govuk-input govuk-!-width-one-quarter" aria-required="true" id="postcode" name="postcode" type="text" value="<%if(form_values[0]){%><%= form_values[0].postcode%><%} else if (form_values) { %><%= form_values.postcode %><% } %>" >
         </div>
-
-        <div class="form-group  <% if (error_report && error_report[1][0].erroneousFields.indexOf('telephone')>-1) { %>error<% } %>" id="legend_telephone">
-            <label class="form-label-bold" for="telephone">Primary number</label>
-            <span class="form-hint">Land line number for this address for delivery questions or updates</span>
-            <legend class="visuallyhidden">Primary mobile number
-            </legend>
-            <span class="error-message">
-                <% if (error_report && primaryAddressErrors.length>0) { %>
-                    <% primaryAddressErrors.forEach( function(errorItem) { %>
-                        <% if (errorItem.questionId == "telephone") { %>
-                            <%= errorItem.fieldError %>
-                        <% } %>
-                    <% }) %>
-                <% } %>
-            </span>
-
-            <input class="govuk-input govuk-!-width-one-half" type="tel" id="telephone" aria-required="true" name="telephone" maxlength="255" value="<%if(form_values[0]){%><%= form_values[0].telephone%><%} else if (form_values) { %><%= form_values.telephone %><% } else {%><%= contact_telephone %><%}%>">
-        </div>
-
         <div class="form-group  <% if (error_report && error_report[1][0].erroneousFields.indexOf('mobileNo')>-1) { %>error<% } %>" id="legend_mobileNo">
-            <label class="form-label-bold" for="mobileNo">Mobile number <span>(optional)</span></label>
+            <label class="form-label-bold" for="mobileNo">Mobile number</label>
             <span class="form-hint">Mobile number for this address for delivery questions or updates</span>
-            <legend class="visuallyhidden">Mobile number <span>(optional)</span>
+            <legend class="visuallyhidden">Mobile number
             </legend>
             <span class="error-message">
                 <% if (error_report && primaryAddressErrors.length>0) { %>
@@ -253,6 +234,23 @@ if (error_report) {
             </span>
 
             <input class="govuk-input govuk-!-width-one-half" type="tel" id="mobileNo"  name="mobileNo" maxlength="255" value="<%if(form_values[0]){%><%= form_values[0].mobileNo || '' %><%} else if (form_values) { %><%= form_values.mobileNo || '' %><% } else {%><%= contact_mobileNo %><%}%>">
+        </div>
+        <div class="form-group  <% if (error_report && error_report[1][0].erroneousFields.indexOf('telephone')>-1) { %>error<% } %>" id="legend_telephone">
+            <label class="form-label-bold" for="telephone">Secondary phone number <span>(optional)</span></label>
+            <span class="form-hint">Land line number for this address for delivery questions or updates</span>
+            <legend class="visuallyhidden">Secondary phone number
+            </legend>
+            <span class="error-message">
+                <% if (error_report && primaryAddressErrors.length>0) { %>
+                    <% primaryAddressErrors.forEach( function(errorItem) { %>
+                        <% if (errorItem.questionId == "telephone") { %>
+                            <%= errorItem.fieldError %>
+                        <% } %>
+                    <% }) %>
+                <% } %>
+            </span>
+
+            <input class="govuk-input govuk-!-width-one-half" type="tel" id="telephone" aria-required="true" name="telephone" maxlength="255" value="<%if(form_values[0]){%><%= form_values[0].telephone%><%} else if (form_values) { %><%= form_values.telephone %><% } else {%><%= contact_telephone %><%}%>">
         </div>
         <div class="form-group  <% if (error_report && error_report[1][0].erroneousFields.indexOf('email')>-1) { %>error<% } %>" id="legend_email">
             <label class="form-label-bold" for="email">Email address <span>(optional)</span></label>

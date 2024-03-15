@@ -11,6 +11,8 @@ const Model = require('../model/models.js'),
     envVariables = common.config(),
     rp = require('request-promise');
 
+const mobilePattern = /^(\+|\d|\(|\#| )(\+|\d|\(| |\-)([0-9]|\(|\)| |\-){6,25}$/;
+const phonePattern = /^(\+|\d|\(|\#| )(\+|\d|\(| |\-)([0-9]|\(|\)| |\-){6,25}$/;
 
 
 module.exports.showUKQuestion = function(req, res) {
@@ -324,14 +326,9 @@ module.exports.saveAddress= function(req,res) {
     Model.User.findOne({where:{email:req.session.email}}).then(function(user) {
         Model.AccountDetails.findOne({where:{user_id:user.id}}).then(function(account){
             var country = req.body.country || '';
-            var email = req.body.email;
-            if (email === ''){
-                email = null;
-            }
+            var email = req.body.email || null;
+            var telephone = req.body.telephone || null;
             var mobileNo = req.body.mobileNo;
-            if (mobileNo === ''){
-                mobileNo = null;
-            }
             var Postcode = require("postcode");
             var postcodeObject = Postcode.toNormalised(req.body.postcode)
             var postcode = ' ';
@@ -359,8 +356,8 @@ module.exports.saveAddress= function(req,res) {
                 county:req.body.county || '',
                 postcode:postcode,
                 country: req.body.country || '',
-                telephone: req.body.telephone,
-                mobileNo: mobileNo,
+                telephone: (telephone !== null) ? phonePattern.test(telephone) ? telephone : '' : null,
+                mobileNo: mobilePattern.test(mobileNo) ? mobileNo : '',
                 email : email
             }).then(function(){
                 if(req.session.initial===true){
@@ -373,7 +370,7 @@ module.exports.saveAddress= function(req,res) {
                 }
             }).catch(function (error) {
                     return getCountries().then(function (countries) {
-                        ValidationService.buildAddressErrorArray(error, req, res, countries,user, account);
+                        ValidationService.buildAddressErrorArray(error, req, res, countries, user, account);
                         return null;
                     });
             });
@@ -445,14 +442,9 @@ module.exports.showEditAddress= function(req,res) {
 
 module.exports.editAddress= function(req,res) {
     var country = req.body.country || '';
-    var email = req.body.email;
-    if (email === ''){
-        email = null;
-    }
+    var email = req.body.email || null;
     var mobileNo = req.body.mobileNo;
-    if (mobileNo === ''){
-        mobileNo = null;
-    }
+    var telephone = req.body.telephone || null;
     var Postcode = require("postcode");
     var postcodeObject = Postcode.toNormalised(req.body.postcode)
     var postcode = ' ';
@@ -462,8 +454,6 @@ module.exports.editAddress= function(req,res) {
     else{
         postcode =  (postcodeObject) ? postcodeObject : '';
     }
-
-
 
     if(!req.body.house_name ||  req.body.house_name.length===0){
         if(req.body.organisation && req.body.organisation.length>0 && req.body.organisation != 'N/A'){
@@ -482,8 +472,8 @@ module.exports.editAddress= function(req,res) {
                 county:req.body.county,
                 postcode:postcode,
                 country: req.body.country,
-                telephone: req.body.telephone,
-                mobileNo: mobileNo,
+                telephone: (telephone !== null) ? phonePattern.test(telephone) ? telephone : '' : null,
+                mobileNo: mobilePattern.test(mobileNo) ? mobileNo : '',
                 email: email
             },{where:{  user_id: user.id, id:req.body.address_id }
             }).then(function(){
@@ -502,8 +492,8 @@ module.exports.editAddress= function(req,res) {
                         county:req.body.county,
                         postcode:postcode,
                         country: req.body.country,
-                        telephone: req.body.telephone,
-                        mobileNo: mobileNo,
+                        telephone: (telephone !== null) ? phonePattern.test(telephone) ? telephone : '' : null,
+                        mobileNo: mobilePattern.test(mobileNo) ? mobileNo : '',
                         email: email
                     };
 
@@ -515,7 +505,6 @@ module.exports.editAddress= function(req,res) {
                 }
             })
                 .catch(function (error) {
-                    console.log(error);
                     return getCountries().then(function (countries) {
                         ValidationService.buildAddressErrorArray(error, req, res, countries,user, account,true);
                         return null;

@@ -371,6 +371,8 @@ module.exports.register = function(req, res) {
                                     company_name: 'N/A',
                                     company_number: 0,
                                     feedback_consent: false,
+                                    mobileNo: null,
+                                    telephone: null
                                 };
 
                                 if (req.body.business_yes_no === 'Yes') {
@@ -425,8 +427,8 @@ module.exports.completeRegistration =function(req,res){
                 Model.AccountDetails.update({
                     first_name: req.body.first_name,
                     last_name: req.body.last_name,
-                    telephone: phonePattern.test(req.body.telephone) ? req.body.telephone : '',
-                    mobileNo: (req.body.mobileNo !== '') ? mobilePattern.test(req.body.mobileNo) ? req.body.mobileNo : null : null,
+                    mobileNo: mobilePattern.test(req.body.mobileNo) ? req.body.mobileNo : '',
+                    telephone: (req.body.telephone !== '') ? phonePattern.test(req.body.telephone) ? req.body.telephone : '' : null,
                     feedback_consent: req.body.feedback_consent || '',
                     complete: true
                 }, {where: {user_id: user.id}})
@@ -444,8 +446,8 @@ module.exports.completeRegistration =function(req,res){
                                 "portalCustomerId": user.id,
                                 "forenames": req.body.first_name,
                                 "surname": req.body.last_name,
-                                "primaryTelephone": phonePattern.test(req.body.telephone) ? req.body.telephone : '',
-                                "mobileTelephone": (req.body.mobileNo !== '') ? mobilePattern.test(req.body.mobileNo) ? req.body.mobileNo : null : null,
+                                "primaryTelephone": (req.body.telephone !== '') ? phonePattern.test(req.body.telephone) ? req.body.telephone : null : null,
+                                "mobileTelephone": mobilePattern.test(req.body.mobileNo) ? req.body.mobileNo : null,
                                 "eveningTelephone": "",
                                 "email": req.session.email,
                                 "companyName": "",
@@ -470,25 +472,32 @@ module.exports.completeRegistration =function(req,res){
                         // Custom error array builder for email match confirmation
                         var erroneousFields = [];
 
-                        if (req.param('first_name') === '') {
+                        if (req.body.first_name === '') {
                             erroneousFields.push('first_name');
                         }
-                        if (req.param('last_name') === '') {
+                        if (req.body.last_name === '') {
                             erroneousFields.push('last_name');
                         }
 
-                        if(typeof (req.param('feedback_consent'))=='undefined') {
+                        if(typeof (req.body.feedback_consent)=='undefined') {
                             erroneousFields.push('feedback_consent');
                         }
-                        if (req.param('telephone') === ''|| req.param('telephone').length<6 || req.param('telephone').length>25  || !phonePattern.test(req.param('telephone'))) {
-                            erroneousFields.push('telephone'); }
+                        if (req.body.telephone !== '' && req.body.telephone !== null){
+                            if (req.body.telephone.length <6 || req.body.telephone.length>25  || !phonePattern.test(req.body.telephone)) {
+                                erroneousFields.push('telephone');
+                            }
+                        }
+                        if (req.body.mobileNo === '' || req.body.mobileNo.length<6 || req.body.mobileNo.length>25  || !mobilePattern.test(req.body.mobileNo)) {
+                            erroneousFields.push('mobileNo');
+                        }
 
                         dataValues = [];
                         dataValues.push({
-                            first_name: req.param('first_name') !== '' ? req.param('first_name') : "",
-                            last_name: req.param('last_name') !== '' ? req.param('last_name') : "",
-                            telephone: req.param('telephone') !== '' ? req.param('telephone') : "",
-                            feedback_consent: typeof (req.param('feedback_consent')) !== 'undefined' ? req.param('feedback_consent') : ""
+                            first_name: req.body.first_name !== '' ? req.body.first_name : "",
+                            last_name: req.body.last_name !== '' ? req.body.last_name : "",
+                            telephone: req.body.telephone !== '' ? req.body.telephone : "",
+                            mobileNo: req.body.mobileNo !== '' ? req.body.mobileNo : "",
+                            feedback_consent: typeof (req.body.feedback_consent) !== 'undefined' ? req.body.feedback_consent : ""
                         });
                         res.render('initial/complete-details', {
                             error_report: ValidationService.validateForm({
@@ -520,20 +529,21 @@ module.exports.completeRegistration =function(req,res){
                         // Custom error array builder for email match confirmation
                         var erroneousFields = [];
 
-                        if (req.param('first_name') === '') {
+                        if (req.body.first_name === '') {
                             erroneousFields.push('first_name');
                         }
-                        if (req.param('last_name') === '') {
+                        if (req.body.last_name === '') {
                             erroneousFields.push('last_name');
                         }
-                        if (req.param('telephone') === '') {
+                        if (req.body.telephone === '') {
                             erroneousFields.push('telephone');
                         }
                         dataValues = [];
                         dataValues.push({
-                            first_name: req.param('first_name') !== '' ? req.param('first_name') : "",
-                            last_name: req.param('last_name') !== '' ? req.param('last_name') : "",
-                            telephone: req.param('telephone') !== '' ? req.param('telephone') : ""
+                            first_name: req.body.first_name !== '' ? req.body.first_name : "",
+                            last_name: req.body.last_name !== '' ? req.body.last_name : "",
+                            telephone: req.body.telephone !== '' ? req.body.telephone : "",
+                            mobileNo: req.body.mobileNo !== '' ? req.body.mobileNo : ""
                         });
                         res.render('initial/complete-details', {
                             error_report: ValidationService.validateForm({

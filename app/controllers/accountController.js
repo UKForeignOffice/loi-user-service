@@ -162,8 +162,8 @@ module.exports.changeDetails = function(req, res) {
                 let accountDetails = {
                     first_name: req.body.first_name,
                     last_name: req.body.last_name,
-                    telephone: phonePattern.test(req.body.telephone) ? req.body.telephone : '',
-                    mobileNo: (req.body.mobileNo !== '') ? mobilePattern.test(req.body.mobileNo) ? req.body.mobileNo : null : null,
+                    mobileNo: mobilePattern.test(req.body.mobileNo) ? req.body.mobileNo : '',
+                    telephone: (req.body.telephone !== '') ? phonePattern.test(req.body.telephone) ? req.body.telephone : '' : null,
                     feedback_consent: req.body.feedback_consent || ''
                 };
 
@@ -200,7 +200,7 @@ module.exports.changeDetails = function(req, res) {
                             }
 
                             // calculate HMAC string and encode in base64
-                            var objectString = JSON.stringify(accountManagementObject, null, 0);
+                            let objectString = JSON.stringify(accountManagementObject, null, 0);
 
                             config.live_variables.caseManagementSystem === 'ORBIT' ?
                                 sendToOrbit(accountManagementObject, user) :
@@ -208,31 +208,20 @@ module.exports.changeDetails = function(req, res) {
 
                         })
                         .catch(function (error) {
-                            console.log(error);
-                            // Custom error array builder for email match confirmation
-                            var erroneousFields = [];
+                            let erroneousFields = [];
 
-
-                            if (req.param('first_name') === '') { erroneousFields.push('first_name'); }
-                            if (req.param('last_name') === '') { erroneousFields.push('last_name'); }
-                            if(typeof (req.param('feedback_consent'))=='undefined') {
+                            if (req.body.first_name === '') { erroneousFields.push('first_name'); }
+                            if (req.body.last_name === '') { erroneousFields.push('last_name'); }
+                            if(typeof (req.body.feedback_consent)=='undefined') {
                                 erroneousFields.push('feedback_consent');
                             }
-                            if (req.param('telephone') === ''|| req.param('telephone').length<6 || req.param('telephone').length>25  ||  !phonePattern.test(req.param('telephone'))) { erroneousFields.push('telephone'); }
-                            if (req.param('mobileNo') !== '' && typeof(req.param('mobileNo')) !== 'undefined') {
-                                if (req.param('mobileNo') === '' || req.param('mobileNo').length < 6 || req.param('mobileNo').length > 25 || !mobilePattern.test(req.param('mobileNo'))) {
-                                    erroneousFields.push('mobileNo');
+                            if (req.body.mobileNo === '' || req.body.mobileNo.length<6 || req.body.mobileNo.length>25  ||  !mobilePattern.test(req.body.mobileNo)) { erroneousFields.push('mobileNo'); }
+                            if (req.body.telephone !== '' && typeof(req.body.telephone) !== 'undefined') {
+                                if (req.body.telephone === '' || req.body.telephone.length < 6 || req.body.telephone.length > 25 || !phonePattern.test(req.body.telephone)) {
+                                    erroneousFields.push('telephone');
                                 }
                             }
 
-                            dataValues = [];
-                            dataValues.push({
-                                first_name: req.param('first_name') !== '' ? req.param('first_name') : "",
-                                last_name: req.param('last_name') !== '' ? req.param('last_name') : "",
-                                telephone: req.param('telephone') !== '' ? req.param('telephone') : "",
-                                mobileNo: req.param('mobileNo') !== '' ? req.param('mobileNo') : "",
-                                feedback_consent: typeof (req.param('feedback_consent')) !== 'undefined' ? req.param('feedback_consent') : ""
-                            });
                             return res.render('account_pages/change-details.ejs', {
                                 error_report:ValidationService.validateForm({error:error,erroneousFields: erroneousFields}),
                                 form_values:req.body,
@@ -250,26 +239,18 @@ module.exports.changeDetails = function(req, res) {
                             // Custom error array builder for email match confirmation
                             var erroneousFields = [];
 
-                            if (req.param('first_name') === '') { erroneousFields.push('first_name'); }
-                            if (req.param('last_name') === '') { erroneousFields.push('last_name'); }
-                            if(typeof (req.param('feedback_consent'))==='undefined') {
+                            if (req.body.first_name === '') { erroneousFields.push('first_name'); }
+                            if (req.body.last_name === '') { erroneousFields.push('last_name'); }
+                            if(typeof (req.body.feedback_consent)==='undefined') {
                                 erroneousFields.push('feedback_consent');
                             }
-                            if (req.param('telephone') === ''|| req.param('telephone').length<6 || req.param('telephone').length>25) { erroneousFields.push('telephone'); }
-                            if (req.param('mobileNo') !== '' && typeof(req.param('mobileNo')) !== 'undefined') {
-                                if (req.param('mobileNo') === '' || req.param('mobileNo').length < 6 || req.param('mobileNo').length > 25) {
+                            if (req.body.telephone === '' || req.body.telephone.length < 6 || req.body.telephone.length > 25) { erroneousFields.push('telephone'); }
+                            if (req.body.mobileNo !== '' && typeof(req.body.mobileNo) !== 'undefined') {
+                                if (req.body.mobileNo === '' || req.body.mobileNo.length < 6 || req.body.mobileNo.length > 25) {
                                     erroneousFields.push('mobileNo');
                                 }
                             }
 
-                            dataValues = [];
-                            dataValues.push({
-                                first_name: req.param('first_name') !== '' ? req.param('first_name') : "",
-                                last_name: req.param('last_name') !== '' ? req.param('last_name') : "",
-                                telephone: req.param('telephone') !== '' ? req.param('telephone') : "",
-                                mobileNo: req.param('mobileNo') !== '' ? req.param('mobileNo') : "",
-                                feedback_consent: typeof (req.param('feedback_consent')) !== 'undefined' ? req.param('feedback_consent') : ""
-                            });
                             return res.render('account_pages/change-details.ejs', {
                                 error_report:ValidationService.validateForm({error:error,erroneousFields: erroneousFields}),
                                 form_values:req.body,
@@ -608,11 +589,11 @@ module.exports.changeCompanyDetails = function(req, res) {
                             // Custom error array builder for email match confirmation
                             var erroneousFields = [];
 
-                            if (req.param('company_name') === '') { erroneousFields.push('company_name'); }
+                            if (req.body.company_name === '') { erroneousFields.push('company_name'); }
 
                             dataValues = [];
                             dataValues.push({
-                                company_name: req.param('company_name') !== '' ? req.param('company_name') : ''
+                                company_name: req.body.company_name !== '' ? req.body.company_name : ''
                             });
                             return res.render('account_pages/change-company-details.ejs', {
                                 error_report:ValidationService.validateForm({error:error,erroneousFields: erroneousFields}), form_values:req.body, url:envVariables
@@ -627,10 +608,10 @@ module.exports.changeCompanyDetails = function(req, res) {
                             // Custom error array builder for email match confirmation
                             var erroneousFields = [];
 
-                            if (req.param('company_name') === '') { erroneousFields.push('company_name'); }
+                            if (req.body.company_name === '') { erroneousFields.push('company_name'); }
                             dataValues = [];
                             dataValues.push({
-                                company_name: req.param('company_name') !== '' ? req.param('company_name') : ""
+                                company_name: req.body.company_name !== '' ? req.body.company_name : ""
                             });
                             return res.render('account_pages/change-company-details.ejs', {
                                 error_report:ValidationService.validateForm({error:error,erroneousFields: erroneousFields}), form_values:req.body, url:envVariables
