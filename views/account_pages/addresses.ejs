@@ -27,11 +27,11 @@
                         }
 
                         var contact_details = "";
-                        if (address.telephone !== "" && address.telephone !== "undefined" && address.telephone !== null){
-                            contact_details = "Contact: " + address.telephone;
+                        if (address.mobileNo !== "" && address.mobileNo !== "undefined" && address.mobileNo !== null){
+                            contact_details = "Contact: " + address.mobileNo;
 
-                            if (address.mobileNo !== "" && address.mobileNo !== "undefined" && address.mobileNo !== null){
-                                contact_details = contact_details + ", " + address.mobileNo;
+                            if (address.telephone !== "" && address.telephone !== "undefined" && address.telephone !== null){
+                                contact_details = contact_details + ", " + address.telephone;
                             }
                             if (address.email !== "" && address.email !== "undefined" && address.email !== null){
                                 contact_details = contact_details + ", " + address.email;

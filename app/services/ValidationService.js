@@ -113,8 +113,8 @@ var ValidationService = {
 
     buildAddressErrorArray: function (error, req, res, countries,user, account,edit) {
         var country = req.body.country || '';
-        var mobilePattern = /^(\+|\d|\(|\#| )(\+|\d|\(| |\-)([0-9]|\(|\)| |\-){5,14}$/;
-        var phonePattern = /^(\+|\d|\(|\#| )(\+|\d|\(| |\-)([0-9]|\(|\)| |\-){5,14}$/;
+        var mobilePattern = /^(\+|\d|\(|\#| )(\+|\d|\(| |\-)([0-9]|\(|\)| |\-){6,25}$/;
+        var phonePattern = /^(\+|\d|\(|\#| )(\+|\d|\(| |\-)([0-9]|\(|\)| |\-){6,25}$/;
             //old phone pattern /([0-9]|[\-+#() ]){6,}/;
         var isemail = require('isemail');
         var Postcode = require("postcode");
@@ -145,12 +145,12 @@ var ValidationService = {
         if (req.body.country === '' || typeof(req.body.country)=='undefined') {
             erroneousFields.push('country');
         }
-        if (req.body.telephone === '' || req.body.telephone.length < 6 || req.body.telephone.length > 25 || !phonePattern.test(req.body.telephone)) {
-            erroneousFields.push('telephone');
+        if (req.body.mobileNo === '' || req.body.mobileNo.length < 6 || req.body.mobileNo.length > 25 || !mobilePattern.test(req.body.mobileNo)) {
+            erroneousFields.push('mobileNo');
         }
-        if (req.body.mobileNo !== "" && typeof(req.body.mobileNo) != 'undefined') {
-            if (req.body.mobileNo === '' || req.body.mobileNo.length < 6 || req.body.mobileNo.length > 25 || !mobilePattern.test(req.body.mobileNo)) {
-                erroneousFields.push('mobileNo');
+        if (req.body.telephone !== null && req.body.telephone !== '') {
+            if (req.body.telephone.length < 6 || req.body.telephone.length > 25 || !phonePattern.test(req.body.telephone)) {
+                erroneousFields.push('telephone');
             }
         }
 
@@ -212,8 +212,8 @@ var ValidationService = {
                 user: user,
                 initial: req.session.initial,
                 account: account,
-                postcode: req.param('postcode'),
-                chosen_address: req.param('chosen_address'),
+                postcode: req.body.postcode,
+                chosen_address: req.body.chosen_address,
                 url: envVariables
             });
         }else if(req.body.country == 'United Kingdom' && JSON.parse(req.body.manual)) {

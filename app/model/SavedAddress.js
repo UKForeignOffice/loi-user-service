@@ -113,21 +113,24 @@ var attributes = {
     },
     telephone: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
         validate: {
-            len:{
-                args: [6,25], //
-                msg: JSON.stringify([{
-                    "errInfo": 'You have not provided a valid phone number',
-                    "errSoltn": 'Enter a valid phone number',
-                    "questionId" : 'telephone'
-                }])
+            isPhone(value) {
+                if (value === null) return;
+                const isLengthValid = value.length >= 6 && value.length <= 25;
+                if (!isLengthValid) {
+                    throw new Error(JSON.stringify([{
+                        "errInfo": 'You have not provided a valid phone number',
+                        "errSoltn": 'Enter a valid phone number',
+                        "questionId": 'telephone'
+                    }]));
+                }
             }
         }
     },
     mobileNo: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: false,
         validate: {
             len:{
                 args: [6,25], //

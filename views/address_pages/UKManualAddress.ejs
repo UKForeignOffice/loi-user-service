@@ -203,8 +203,28 @@ if (error_report) {
             </fieldset>
         </div>
 
+        <div class="form-group  <% if (error_report && error_report[1][0].erroneousFields.indexOf('mobileNo')>-1) { %>error<% } %>" id="legend_mobileNo">
+            <label class="form-label-bold" for="mobileNo">Mobile number</label>
+            <span class="form-hint">Mobile number for this address for delivery questions or updates</span>
+            <fieldset>
+                <legend class="visuallyhidden">Mobile number
+                </legend>
+                <span class="error-message">
+                    <% if (error_report && primaryAddressErrors.length>0) { %>
+                        <% primaryAddressErrors.forEach( function(errorItem) { %>
+                            <% if (errorItem.questionId == "mobileNo") { %>
+                                <%= errorItem.fieldError %>
+                            <% } %>
+                        <% }) %>
+                    <% } %>
+                </span>
+
+                <input class="govuk-input govuk-!-width-one-half" type="tel" id="mobileNo"  name="mobileNo" maxlength="255" value="<%if(form_values[0]){%><%= form_values[0].mobileNo || ''%><%} else if (form_values) { %><%= form_values.mobileNo || '' %><% } else {%><%= contact_mobileNo%><%}%>">
+            </fieldset>
+        </div>
+
         <div class="form-group  <% if (error_report && error_report[1][0].erroneousFields.indexOf('telephone')>-1) { %>error<% } %>" id="legend_telephone">
-            <label class="form-label-bold" for="telephone">Primary number</label>
+            <label class="form-label-bold" for="telephone">Secondary phone number <span>(optional)</span></label>
             <span class="form-hint">Contact number for this address for delivery questions or updates</span>
             <fieldset>
                 <legend class="visuallyhidden">Primary phone number
@@ -219,26 +239,6 @@ if (error_report) {
                     <% } %>
                 </span>
                 <input class="govuk-input govuk-!-width-one-half" type="tel" id="telephone" aria-required="true" name="telephone" maxlength="255" value="<%if(form_values[0]){%><%= form_values[0].telephone%><%} else if (form_values) { %><%= form_values.telephone %><% } else {%><%= contact_telephone %><%}%>">
-            </fieldset>
-        </div>
-
-        <div class="form-group  <% if (error_report && error_report[1][0].erroneousFields.indexOf('mobileNo')>-1) { %>error<% } %>" id="legend_mobileNo">
-            <label class="form-label-bold" for="mobileNo">Mobile number <span>(optional)</span></label>
-            <span class="form-hint">Mobile number for this address for delivery questions or updates</span>
-            <fieldset>
-                <legend class="visuallyhidden">Mobile number <span>(optional)</span>
-                </legend>
-                <span class="error-message">
-                    <% if (error_report && primaryAddressErrors.length>0) { %>
-                        <% primaryAddressErrors.forEach( function(errorItem) { %>
-                            <% if (errorItem.questionId == "mobileNo") { %>
-                                <%= errorItem.fieldError %>
-                            <% } %>
-                        <% }) %>
-                    <% } %>
-                </span>
-
-                <input class="govuk-input govuk-!-width-one-half" type="tel" id="mobileNo"  name="mobileNo" maxlength="255" value="<%if(form_values[0]){%><%= form_values[0].mobileNo || ''%><%} else if (form_values) { %><%= form_values.mobileNo || '' %><% } else {%><%= contact_mobileNo%><%}%>">
             </fieldset>
         </div>
 
