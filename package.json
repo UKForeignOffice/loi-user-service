@@ -30,7 +30,7 @@
     "pg-hstore": "~2.3.4",
     "postcode": "^5.1.0",
     "redis": "^4.7.0",
-    "sequelize": "^6.37.5",
+    "sequelize": "^6.37.8",
     "validator": "^13.15.20",
     "winston": "^3.17.0"
   },
