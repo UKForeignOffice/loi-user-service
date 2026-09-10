@@ -34,7 +34,7 @@
     "@vitest/coverage-v8": "^4.1.6",
     "sass": "^1.83.1",
     "supertest": "^6.3.4",
-    "vitest": "^4.1.5"
+    "vitest": "^4.1.11"
   },
   "scripts": {
     "format": "biome check --write .",
