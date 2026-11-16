@@ -1,6 +1,18 @@
 # Monthly patching
 
-Add a dated section after each month's dependency review. Record resolved versions, the reason for each change, and any findings left for follow-up.
+Insert each new `## YYYY-MM-DD` entry immediately below these instructions,
+before older entries (reverse date order, newest first). Include only a
+**Dependency / From / To / Why** table listing patched dependencies or override
+changes, actual old/new versions and one short reason each. Preserve earlier
+entries; do not copy their verbose sections. Keep audits, test output,
+commands, hashes and artifact details in separate review evidence; report
+unresolved findings in the handoff, not extra log sections.
+
+## 2026-11-16
+
+| Dependency | From | To | Why |
+| --- | --- | --- | --- |
+| `follow-redirects` | 1.16.1 | 1.16.3 | Prevent custom credentials leaking across redirects. |
 
 ## 2026-10-27
 
@@ -14,9 +26,3 @@ Add a dated section after each month's dependency review. Record resolved versio
 | `proxy-addr` (lockfile) | 2.0.7 | 2.0.8 | Fix the critical IP-spoofing advisory. |
 | `source-map-js` (lockfile) | 1.2.1 | 1.2.2 | Fix the event-loop denial-of-service advisory. |
 | `vite` (lockfile) | 8.3.0 | 8.3.5 | Fix transitive Vite advisories. |
-
-The initial audit reported 10 vulnerabilities (1 critical, 5 high, 4 moderate). After patching, both the full and production audits report zero vulnerabilities. The lockfile-only audit refresh updated compatible transitive dependencies; no overrides were needed.
-
-The coverage-enabled test suite passed: 14 test files and 149 tests. The explicit Biome check passed for `package.json`; `npm run quality` returned 1 because its changed-file scan found no supported files to process. npm also reported existing deprecation notices for `csurf`, `supertest`, and `superagent`; review those separately.
-
-The full local Docker stack was rebuilt with the patched dependencies. App and verify returned HTTP 200, all five internal service checks passed, and PostgreSQL, Redis, ClamAV and pgAdmin responded. Running service dependency versions matched the patched lockfiles. Existing databases and Orbit stub state were retained; live payment, email and address-provider transactions were not exercised.
